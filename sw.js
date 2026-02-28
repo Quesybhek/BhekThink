@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bhekthink-v1';
+const CACHE_NAME = 'bhekthink-v3';
 const urlsToCache = [
   '/BhekThink/',
   '/BhekThink/index.html',
@@ -13,16 +13,16 @@ const urlsToCache = [
   'https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200'
 ];
 
-// Install event – cache essential files
+// Install – cache assets
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => cache.addAll(urlsToCache))
-      .then(() => self.skipWaiting()) // Activate worker immediately
+      .then(() => self.skipWaiting())
   );
 });
 
-// Activate event – clean up old caches and claim clients
+// Activate – clean old caches
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(cacheNames => {
@@ -31,27 +31,27 @@ self.addEventListener('activate', event => {
           if (name !== CACHE_NAME) return caches.delete(name);
         })
       );
-    }).then(() => self.clients.claim()) // Take control of all pages
+    }).then(() => self.clients.claim())
   );
 });
 
-// Fetch event – serve from cache, fallback to network (stale-while-revalidate)
+// Fetch – stale-while-revalidate
 self.addEventListener('fetch', event => {
   event.respondWith(
     caches.match(event.request)
       .then(response => {
         if (response) {
-          // Found in cache – return it and update cache in background
+          // Return cached and update in background
           event.waitUntil(
             fetch(event.request).then(networkResponse => {
               caches.open(CACHE_NAME).then(cache => {
                 cache.put(event.request, networkResponse.clone());
               });
-            }).catch(() => {}) // Ignore failures
+            }).catch(() => {})
           );
           return response;
         }
-        // Not in cache – fetch from network and cache
+        // Not cached – fetch and cache
         return fetch(event.request).then(networkResponse => {
           return caches.open(CACHE_NAME).then(cache => {
             cache.put(event.request, networkResponse.clone());
@@ -62,7 +62,58 @@ self.addEventListener('fetch', event => {
   );
 });
 
-// Listen for skip-waiting message from the page
+// Background Sync – for offline actions
+self.addEventListener('sync', event => {
+  if (event.tag === 'sync-messages') {
+    event.waitUntil(syncMessages());
+  }
+});
+
+async function syncMessages() {
+  // Example: retry sending queued messages
+  console.log('Background sync triggered');
+  // You would read from IndexedDB and send to server
+}
+
+// Periodic Background Sync – for fresh content
+self.addEventListener('periodicsync', event => {
+  if (event.tag === 'update-cache') {
+    event.waitUntil(refreshCache());
+  }
+});
+
+async function refreshCache() {
+  const cache = await caches.open(CACHE_NAME);
+  const requests = urlsToCache.map(url => new Request(url));
+  await Promise.all(requests.map(request => 
+    fetch(request).then(response => cache.put(request, response))
+  ));
+  console.log('Periodic cache update completed');
+}
+
+// Push Notifications
+self.addEventListener('push', event => {
+  const data = event.data.json();
+  const options = {
+    body: data.body,
+    icon: '/icon-192.png',
+    badge: '/icon-192.png',
+    vibrate: [200, 100, 200],
+    data: { url: data.url }
+  };
+  event.waitUntil(
+    self.registration.showNotification(data.title, options)
+  );
+});
+
+self.addEventListener('notificationclick', event => {
+  event.notification.close();
+  if (event.notification.data.url) {
+    event.waitUntil(clients.openWindow(event.notification.data.url));
+  }
+});
+
+// Message from page to skip waiting
 self.addEventListener('message', event => {
   if (event.data && event.data.type === 'SKIP_WAITING') {
     self.skipWaiting();
