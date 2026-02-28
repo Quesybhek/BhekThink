@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>BhekThink v1024.0 | Sovereign Convergence</title>
+    <title>BhekThink v1029.0 | Sovereign Core</title>
     
     <!-- PWA Support -->
     <link rel="manifest" href="manifest.json">
@@ -20,9 +20,15 @@
     <link rel="apple-touch-startup-image" href="splash/ipadpro11_portrait.png" media="(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2)">
     <link rel="apple-touch-startup-image" href="splash/ipadpro11_landscape.png" media="(device-width: 1194px) and (device-height: 834px) and (-webkit-device-pixel-ratio: 2)">
 
+    <!-- Puter SDK -->
     <script src="https://js.puter.com/v2/"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <!-- KaTeX for LaTeX rendering -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script>
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/tokyo-night-dark.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
@@ -40,9 +46,6 @@
             --bt-glow: 0 0 25px rgba(0, 102, 204, 0.3);
             --panel: #ffffff;
             --dim: #6e6e73;
-            --director: #aa00ff;
-            --architect: #00aaff;
-            --forge: #ffaa00;
         }
 
         /* Dark theme (default) */
@@ -57,9 +60,6 @@
             --bt-glow: 0 0 25px rgba(0, 255, 136, 0.4);
             --panel: #0d0d0d;
             --dim: #5f6368;
-            --director: #bb88ff;
-            --architect: #88ccff;
-            --forge: #ffcc88;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', system-ui, sans-serif; }
@@ -93,23 +93,30 @@
         .update-text { color: var(--accent); font-weight: 600; font-size: 14px; }
         .update-btn { background: var(--accent); color: #000; border: none; border-radius: 30px; padding: 6px 16px; font-weight: 900; cursor: pointer; font-size: 12px; }
 
-        /* Hive View Indicator */
-        #hive-indicator {
-            position: fixed; top: 10px; left: 50%; transform: translateX(-50%);
-            background: var(--panel); border: 1px solid var(--accent);
-            border-radius: 40px; padding: 8px 20px; display: none;
-            align-items: center; gap: 12px; z-index: 1000;
-            box-shadow: var(--bt-glow); backdrop-filter: blur(10px);
-            font-size: 12px; font-weight: 600;
+        /* Command Palette */
+        #command-palette {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 90%; max-width: 600px; background: var(--panel);
+            border: 2px solid var(--accent); border-radius: 20px;
+            box-shadow: var(--bt-glow); z-index: 10001; display: none;
+            flex-direction: column; backdrop-filter: blur(25px);
         }
-        .agent-pulse {
-            width: 12px; height: 12px; border-radius: 50%;
-            animation: pulse 1.5s infinite;
+        #command-input {
+            width: 100%; padding: 20px; background: transparent;
+            border: none; border-bottom: 1px solid var(--dim);
+            color: var(--text); font-size: 18px; outline: none;
         }
-        .agent-pulse.director { background: var(--director); box-shadow: 0 0 10px var(--director); }
-        .agent-pulse.architect { background: var(--architect); box-shadow: 0 0 10px var(--architect); }
-        .agent-pulse.forge { background: var(--forge); box-shadow: 0 0 10px var(--forge); }
-        .agent-pulse.idle { background: var(--dim); }
+        #command-results {
+            max-height: 300px; overflow-y: auto; padding: 10px 0;
+        }
+        .command-item {
+            padding: 12px 20px; cursor: pointer; display: flex;
+            align-items: center; gap: 12px; color: var(--text);
+            transition: 0.2s;
+        }
+        .command-item:hover, .command-item.selected {
+            background: var(--accent); color: #000;
+        }
 
         #menu { 
             position: fixed; top: 0; left: -100%; width: 85vw; max-width: 380px; height: 100%; 
@@ -138,9 +145,9 @@
             z-index: 100; 
             background: var(--panel); 
             backdrop-filter: blur(10px); 
-            padding-top: max(20px, env(titlebar-area-height, 0px)); 
-            padding-left: env(titlebar-area-x, 30px);
-            padding-right: env(titlebar-area-width, auto);
+            padding-top: max(20px, env(titlebar-area-height, 0px), constant(safe-area-inset-top)); 
+            padding-left: max(30px, env(titlebar-area-x, 30px), constant(safe-area-inset-left));
+            padding-right: max(30px, env(titlebar-area-width, auto), constant(safe-area-inset-right));
         }
         .live-tag { color: var(--accent); font-weight: 950; letter-spacing: 4px; font-size: 14px; }
 
@@ -158,7 +165,16 @@
         }
         .node-ai:hover .regenerate-btn { opacity: 1; }
 
-        .dock-container { padding: 20px; display: flex; flex-direction: column; align-items: center; background: linear-gradient(transparent, var(--bg) 70%); gap: 10px; }
+        /* Dock container with safe-area-inset-bottom for iOS */
+        .dock-container {
+            padding: 20px;
+            padding-bottom: max(20px, env(safe-area-inset-bottom), constant(safe-area-inset-bottom));
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: linear-gradient(transparent, var(--bg) 70%);
+            gap: 10px;
+        }
         
         #vision-preview-container { 
             display: none; position: relative; width: 60px; height: 60px; 
@@ -207,22 +223,6 @@
         @keyframes shine { to { background-position: 200%; } }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes slideUp { from { transform: translate(-50%, 100%); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }
-        
-        /* Refined pulse animation for Hive View */
-        @keyframes pulse {
-            0% {
-                box-shadow: 0 0 0 0 rgba(var(--accent-rgb), 0.4);
-                transform: scale(0.95);
-            }
-            70% {
-                box-shadow: 0 0 0 10px rgba(var(--accent-rgb), 0);
-                transform: scale(1.05);
-            }
-            100% {
-                box-shadow: 0 0 0 0 rgba(var(--accent-rgb), 0);
-                transform: scale(0.95);
-            }
-        }
     </style>
 </head>
 <body class="bhekthink-absolute" data-theme="dark">
@@ -231,7 +231,7 @@
 
     <div id="induction">
         <div class="brand-reveal">BhekThink</div>
-        <div class="sub-reveal" style="color: var(--accent); letter-spacing: 5px; font-weight: 900; margin-top: 10px;">SOVEREIGN SINGULARITY</div>
+        <div class="sub-reveal" style="color: var(--accent); letter-spacing: 5px; font-weight: 900; margin-top: 10px;">SOVEREIGN CORE</div>
         <button class="boot-btn" onclick="Kernel.boot()">INITIALIZE KERNEL</button>
     </div>
 
@@ -242,11 +242,10 @@
         <button class="update-btn" onclick="Kernel.applyUpdate()">UPDATE</button>
     </div>
 
-    <!-- Hive View Indicator -->
-    <div id="hive-indicator">
-        <span>Agent Hive</span>
-        <div class="agent-pulse idle" id="agent-pulse"></div>
-        <span id="agent-name">Idle</span>
+    <!-- Command Palette -->
+    <div id="command-palette" onclick="event.stopPropagation()">
+        <input type="text" id="command-input" placeholder="Type a command..." autocomplete="off">
+        <div id="command-results"></div>
     </div>
 
     <div id="menu">
@@ -270,15 +269,13 @@
         <div class="sidebar-section">
             <div class="section-label">Model Selection</div>
             <select id="model-select" class="model-select" onchange="UI.setModel(this.value)">
-                <optgroup label="2026 Frontier Models">
-                    <option value="gpt-6-preview">GPT-6 (Early Access Preview)</option>
-                    <option value="gpt-5.2-pro">GPT-5.2 Pro (Deep Reasoning)</option>
-                    <option value="gpt-5.2-instant">GPT-5.2 Instant (Turbo)</option>
-                </optgroup>
-                <optgroup label="Legacy & Standard">
-                    <option value="gpt-5">GPT-5 (Standard)</option>
-                    <option value="gpt-4o">GPT-4o (Vision)</option>
-                </optgroup>
+                <option value="gpt-4o">GPT-4o (Vision)</option>
+                <option value="gpt-4-turbo">GPT-4 Turbo</option>
+                <option value="gpt-4">GPT-4</option>
+                <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                <option value="claude-3-opus">Claude 3 Opus</option>
+                <option value="claude-3-sonnet">Claude 3 Sonnet</option>
+                <option value="claude-3-haiku">Claude 3 Haiku</option>
             </select>
         </div>
 
@@ -300,7 +297,6 @@
                 <button class="tool-btn" onclick="UI.toggle('webEnabled')"><span class="material-symbols-rounded">public</span> WEB: <span id="s-web">ON</span></button>
                 <button class="tool-btn" onclick="UI.toggle('visionEnabled')"><span class="material-symbols-rounded">visibility</span> VISION: <span id="s-vision">ON</span></button>
                 <button class="tool-btn" onclick="UI.toggle('thinkMode')"><span class="material-symbols-rounded">psychology</span> THINK: <span id="s-think">OFF</span></button>
-                <button class="tool-btn" onclick="UI.toggle('collabMode')"><span class="material-symbols-rounded">groups</span> HIVE: <span id="s-collab">OFF</span></button>
                 <button class="tool-btn" onclick="UI.toggleTheme()"><span class="material-symbols-rounded">dark_mode</span> THEME: <span id="s-theme">DARK</span></button>
             </div>
         </div>
@@ -322,7 +318,7 @@
     <header>
         <div style="display: flex; align-items: center; gap: 15px;">
             <span class="material-symbols-rounded dock-action" onclick="UI.toggleMenu()" style="font-size: 28px;" aria-label="Menu">menu</span>
-            <div class="live-tag">BHEKTHINK v1024.0</div>
+            <div class="live-tag">BHEKTHINK v1029.0</div>
         </div>
         <canvas id="visualizer" width="140" height="30" aria-label="Audio Visualizer"></canvas>
         <div style="display: flex; gap: 10px;">
@@ -359,7 +355,6 @@
             <span class="material-symbols-rounded dock-action" onclick="Kernel.imageMode()" style="color:var(--accent)">palette</span>
             <span class="material-symbols-rounded dock-action" onclick="UI.toggleWebSearch()" id="web-search-icon" style="color:var(--accent)">public</span>
             <span class="material-symbols-rounded dock-action" onclick="UI.toggleThinkMode()" id="think-mode-icon" style="color:var(--accent)">psychology</span>
-            <span class="material-symbols-rounded dock-action" onclick="UI.toggleCollabMode()" id="collab-mode-icon" style="color:var(--accent)">groups</span>
             <textarea id="omni-input" placeholder="Address Sovereign Singularity..." rows="1"></textarea>
             <span class="material-symbols-rounded dock-action" onclick="Voice.stop()">volume_off</span>
             <span class="material-symbols-rounded dock-action" id="mic-btn" onclick="Voice.listen()">mic</span>
@@ -370,6 +365,86 @@
     <script>
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
+        // ==================== ABSTRACT PROVIDER INTERFACES ====================
+        class AIProvider {
+            async chat(messages, options) { throw new Error("Not implemented"); }
+            async txt2img(prompt) { throw new Error("Not implemented"); }
+        }
+
+        class StorageProvider {
+            async save(key, value) { throw new Error("Not implemented"); }
+            async load(key) { throw new Error("Not implemented"); }
+            async list(prefix) { throw new Error("Not implemented"); }
+            async delete(key) { throw new Error("Not implemented"); }
+        }
+
+        class AuthProvider {
+            async signIn() { throw new Error("Not implemented"); }
+            async signOut() { throw new Error("Not implemented"); }
+            async getUser() { throw new Error("Not implemented"); }
+        }
+
+        // ==================== PUTER PROVIDER IMPLEMENTATIONS ====================
+        class PuterAI extends AIProvider {
+            async chat(messages, options) {
+                return await puter.ai.chat(messages, options);
+            }
+            async txt2img(prompt) {
+                return await puter.ai.txt2img(prompt);
+            }
+        }
+
+        class PuterStorage extends StorageProvider {
+            async save(key, value) {
+                if (key.startsWith('~')) {
+                    await puter.fs.write(key, value);
+                } else {
+                    await puter.kv.set(key, value);
+                }
+            }
+            async load(key) {
+                if (key.startsWith('~')) {
+                    return await puter.fs.read(key);
+                } else {
+                    return await puter.kv.get(key);
+                }
+            }
+            async list(prefix) {
+                if (prefix.startsWith('~')) {
+                    return await puter.fs.readdir(prefix);
+                } else {
+                    return []; // KV doesn't support listing
+                }
+            }
+            async delete(key) {
+                if (key.startsWith('~')) {
+                    await puter.fs.delete(key);
+                } else {
+                    await puter.kv.del(key);
+                }
+            }
+        }
+
+        class PuterAuth extends AuthProvider {
+            async signIn() {
+                return await puter.auth.signIn();
+            }
+            async signOut() {
+                return await puter.auth.signOut();
+            }
+            async getUser() {
+                return await puter.auth.getUser();
+            }
+        }
+
+        // ==================== SERVICES CONTAINER ====================
+        const Services = {
+            ai: null,
+            storage: null,
+            auth: null
+        };
+
+        // ==================== NEXUS ====================
         const Nexus = {
             history: [],
             currentChatId: null,
@@ -379,44 +454,72 @@
                 webEnabled: true,
                 visionEnabled: true,
                 thinkMode: false,
-                collabMode: false,
                 lang: 'English',
                 model: 'gpt-4o',
                 theme: 'dark'
             }
         };
 
-        // Agent Registry for Multi-Agent Collaboration
-        const AgentRegistry = {
-            DIRECTOR: { 
-                role: "Sovereign Director", 
-                model: "gpt-6-preview", 
-                reasoning: "high",
-                color: "director"
+        // ==================== COMMAND PALETTE ====================
+        const CommandPalette = {
+            overlay: document.getElementById('command-palette'),
+            input: document.getElementById('command-input'),
+            results: document.getElementById('command-results'),
+            commands: [
+                { name: 'New Chat', action: () => UI.newChat(), icon: 'chat' },
+                { name: 'Toggle Menu', action: () => UI.toggleMenu(), icon: 'menu' },
+                { name: 'Toggle Web Search', action: () => UI.toggleWebSearch(), icon: 'public' },
+                { name: 'Toggle Think Mode', action: () => UI.toggleThinkMode(), icon: 'psychology' },
+                { name: 'Toggle Theme', action: () => UI.toggleTheme(), icon: 'dark_mode' },
+                { name: 'Export Chat', action: () => UI.exportChat(), icon: 'download' },
+                { name: 'Panic Clear', action: () => Kernel.panicClear(), icon: 'delete_forever' },
+            ],
+            selectedIndex: -1,
+            open() {
+                this.overlay.style.display = 'flex';
+                this.input.focus();
+                this.filter('');
             },
-            ARCHITECT: { 
-                role: "System Architect", 
-                model: "gpt-5.2-pro", 
-                reasoning: "high",
-                instructions: "Focus on structural integrity, security, and scalability.",
-                color: "architect"
+            close() {
+                this.overlay.style.display = 'none';
+                this.input.value = '';
+                this.results.innerHTML = '';
             },
-            FORGE: { 
-                role: "Code Forge", 
-                model: "gpt-5.2-instant", 
-                reasoning: "low",
-                instructions: "Write clean, performant, and modern code. No yapping.",
-                color: "forge"
+            filter(query) {
+                const q = query.toLowerCase();
+                const filtered = this.commands.filter(cmd => cmd.name.toLowerCase().includes(q));
+                this.results.innerHTML = filtered.map((cmd, i) => `
+                    <div class="command-item" data-index="${i}" onclick="CommandPalette.execute('${cmd.name}')">
+                        <span class="material-symbols-rounded">${cmd.icon}</span>
+                        <span>${cmd.name}</span>
+                    </div>
+                `).join('');
+                this.selectedIndex = filtered.length ? 0 : -1;
+                this.highlight();
+            },
+            highlight() {
+                const items = this.results.querySelectorAll('.command-item');
+                items.forEach((item, i) => {
+                    if (i === this.selectedIndex) item.classList.add('selected');
+                    else item.classList.remove('selected');
+                });
+            },
+            execute(name) {
+                const cmd = this.commands.find(c => c.name === name);
+                if (cmd) {
+                    cmd.action();
+                    this.close();
+                }
             }
         };
 
-        // Archives System
+        // ==================== ARCHIVES ====================
         const Archives = {
             async init() {
                 try {
-                    await puter.fs.mkdir('~/.bhekthink/archives', { recursive: true });
+                    await Services.storage.save('~/.bhekthink/archives/.keep', ''); // ensure directory exists
                     this.refreshSidebar();
-                } catch (e) { console.warn("Archive directory already exists."); }
+                } catch (e) { console.warn("Archive directory init error", e); }
             },
 
             async save() {
@@ -439,7 +542,7 @@
                     config: Nexus.config
                 };
 
-                await puter.fs.write(filename, JSON.stringify(bundle));
+                await Services.storage.save(filename, JSON.stringify(bundle));
                 this.refreshSidebar();
             },
 
@@ -448,15 +551,16 @@
                 if (!list) return;
                 
                 try {
-                    const files = await puter.fs.readdir('~/.bhekthink/archives');
+                    const files = await Services.storage.list('~/.bhekthink/archives');
                     list.innerHTML = '';
 
                     files.sort((a, b) => b.modified - a.modified);
 
                     files.forEach(file => {
+                        if (file.name === '.keep') return;
                         const item = document.createElement('div');
                         item.className = 'map-item';
-                        if (file.path.includes(Nexus.currentChatId)) {
+                        if (file.path && file.path.includes(Nexus.currentChatId)) {
                             item.classList.add('active');
                         }
                         const displayName = file.name.replace('.json', '').split('_').slice(1).join(' ') || file.name;
@@ -483,7 +587,7 @@
                 loadingMsg.innerHTML = `<div class="ai-text">Loading neural state...</div>`;
                 document.getElementById('stream').appendChild(loadingMsg);
                 
-                const data = await puter.fs.read(path);
+                const data = await Services.storage.load(path);
                 const bundle = JSON.parse(data);
 
                 Nexus.history = bundle.history;
@@ -502,18 +606,35 @@
             async delete(path, e) {
                 e.stopPropagation();
                 if(confirm("Erase this timeline from the archives?")) {
-                    await puter.fs.delete(path);
+                    await Services.storage.delete(path);
                     this.refreshSidebar();
                 }
             }
         };
 
+        // ==================== KERNEL ====================
         const Kernel = {
             busy: false,
             pendingImage: null,
             updateRegistration: null,
 
             async boot() {
+                // Initialize providers first
+                Services.ai = new PuterAI();
+                Services.storage = new PuterStorage();
+                Services.auth = new PuterAuth();
+
+                // Load saved config
+                try {
+                    const savedConfig = await Services.storage.load('bt_config_v14');
+                    if (savedConfig) Nexus.config = JSON.parse(savedConfig);
+                } catch (e) {
+                    console.warn("Could not load config", e);
+                }
+
+                // Update UI to match config
+                UI.updateUIFromConfig();
+
                 document.getElementById('induction').style.opacity = '0';
                 setTimeout(() => {
                     document.getElementById('induction').remove();
@@ -558,7 +679,39 @@
                             this.log("Inbound Share Detected.");
                         }
                     }
+
+                    // Keyboard shortcuts
+                    document.addEventListener('keydown', this.handleKeyDown.bind(this));
                 }, 1200);
+            },
+
+            handleKeyDown(e) {
+                // Ctrl+Shift+X for panic clear
+                if (e.ctrlKey && e.shiftKey && e.key === 'X') {
+                    e.preventDefault();
+                    this.panicClear();
+                }
+                // Ctrl+K for command palette
+                if (e.ctrlKey && e.key === 'k') {
+                    e.preventDefault();
+                    CommandPalette.open();
+                }
+                // Escape to close command palette
+                if (e.key === 'Escape' && CommandPalette.overlay.style.display === 'flex') {
+                    CommandPalette.close();
+                }
+            },
+
+            panicClear() {
+                if (confirm("⚠️ PANIC CLEAR: This will erase all current conversation and local data. Proceed?")) {
+                    Nexus.history = [];
+                    Nexus.currentChatId = null;
+                    document.getElementById('stream').innerHTML = "";
+                    Services.storage.delete('bt_state_v8');
+                    Services.storage.delete('bt_config_v14');
+                    Kernel.renderAI("Panic clear executed. All local data wiped. Ready for new orders, Sovereign.");
+                    Archives.refreshSidebar();
+                }
             },
 
             showUpdateNotification() {
@@ -576,24 +729,6 @@
                 const term = document.getElementById('terminal');
                 term.innerHTML += `<div>> [${new Date().toLocaleTimeString()}] ${msg}</div>`;
                 term.scrollTop = term.scrollHeight;
-            },
-
-            setHiveAgent(agentKey) {
-                const indicator = document.getElementById('hive-indicator');
-                const pulse = document.getElementById('agent-pulse');
-                const nameSpan = document.getElementById('agent-name');
-                
-                if (!agentKey || agentKey === 'idle') {
-                    indicator.style.display = 'none';
-                    return;
-                }
-                
-                const agent = AgentRegistry[agentKey];
-                if (!agent) return;
-                
-                indicator.style.display = 'flex';
-                pulse.className = `agent-pulse ${agent.color}`;
-                nameSpan.textContent = agent.role;
             },
 
             setupInteractions() {
@@ -688,7 +823,7 @@
                 input.value = "";
                 
                 try {
-                    const image = await puter.ai.txt2img(val);
+                    const image = await Services.ai.txt2img(val);
                     this.renderImage(image.src);
                     Nexus.history.push({ role: 'assistant', content: `Generated image for: ${val}` });
                     Memory.saveContext();
@@ -699,51 +834,18 @@
                 }
                 
                 this.busy = false; document.body.classList.remove('thinking'); AudioKernel.pulse(false);
-                this.setHiveAgent('idle');
-            },
-
-            // Multi-Agent Orchestration
-            async orchestrate(userPrompt) {
-                this.log("📡 Orchestrator: Spawning Collaborative Hive...");
-                this.setHiveAgent('DIRECTOR');
-                
-                // 1. Director creates the Strategic Plan
-                const planResponse = await puter.ai.chat([
-                    { role: "system", content: "You are the Director. Break this task into 2 execution steps." },
-                    { role: "user", content: userPrompt }
-                ], { 
-                    model: AgentRegistry.DIRECTOR.model, 
-                    reasoning_effort: "high" 
-                });
-
-                const planText = planResponse.text || planResponse;
-                this.renderAI(`**[DIRECTOR PLAN]**\n${planText}`);
-                
-                // 2. Forge Agent executes the technical part
-                this.setHiveAgent('FORGE');
-                this.log("🔨 Forge Agent: Commencing Implementation...");
-                
-                const forgeResponse = await puter.ai.chat([
-                    { role: "system", content: AgentRegistry.FORGE.instructions },
-                    { role: "user", content: `Execute this part of the plan: ${planText}` }
-                ], { 
-                    model: AgentRegistry.FORGE.model, 
-                    reasoning_effort: AgentRegistry.FORGE.reasoning 
-                });
-
-                const forgeText = forgeResponse.text || forgeResponse;
-                this.renderAI(`**[FORGE EXECUTION]**\n${forgeText}`);
-                
-                // Optional: Architect review (could be added as a third step)
-                // For now, just finish
-                this.setHiveAgent('idle');
-                this.log("✅ Collaborative Hive completed.");
             },
 
             generateContextMap(fileName, text) {
                 const trigger = document.getElementById('map-trigger');
                 const list = document.getElementById('map-list');
-                const chunks = text.match(/.{1,2000}/g) || [];
+                const chunkSize = 2000;
+                const overlap = 200;
+                const chunks = [];
+                for (let i = 0; i < text.length; i += chunkSize - overlap) {
+                    chunks.push(text.substring(i, i + chunkSize));
+                }
+                
                 list.innerHTML = `<div style="color:var(--accent); margin-bottom:8px;">Source: ${fileName}</div>`;
                 chunks.forEach((chunk, i) => {
                     const item = document.createElement('div');
@@ -757,7 +859,7 @@
                     list.appendChild(item);
                 });
                 trigger.style.display = 'block';
-                this.log(`Context Map Generated: ${chunks.length} clusters.`);
+                this.log(`Context Map Generated: ${chunks.length} clusters with overlap.`);
             },
 
             showStagedImage(src) {
@@ -770,6 +872,46 @@
             clearStagedImage() {
                 this.pendingImage = null;
                 document.getElementById('vision-preview-container').style.display = 'none';
+            },
+
+            // Context pruning to keep last 20 messages + pinned instructions
+            pruneHistory() {
+                if (Nexus.history.length > 25) {
+                    const systemMessages = Nexus.history.filter(m => m.role === 'system');
+                    const otherMessages = Nexus.history.filter(m => m.role !== 'system');
+                    const recent = otherMessages.slice(-20);
+                    Nexus.history = [...systemMessages, ...recent];
+                }
+            },
+
+            // Enhanced post-processing with KaTeX for LaTeX
+            applyPostProcessing(node) {
+                // Highlight code
+                node.querySelectorAll('pre code').forEach(c => hljs.highlightElement(c));
+                // Add copy buttons
+                node.querySelectorAll('pre').forEach(pre => {
+                    const btn = document.createElement('span');
+                    btn.className = 'material-symbols-rounded copy-btn';
+                    btn.innerText = 'content_copy';
+                    btn.onclick = () => { navigator.clipboard.writeText(pre.innerText); this.log("Code Copied."); };
+                    pre.appendChild(btn);
+                });
+                // Render LaTeX if KaTeX is available
+                if (typeof renderMathInElement === 'function') {
+                    try {
+                        renderMathInElement(node, {
+                            delimiters: [
+                                {left: '$$', right: '$$', display: true},
+                                {left: '$', right: '$', display: false},
+                                {left: '\\(', right: '\\)', display: false},
+                                {left: '\\[', right: '\\]', display: true}
+                            ],
+                            throwOnError: false
+                        });
+                    } catch (e) {
+                        console.warn('KaTeX error:', e);
+                    }
+                }
             },
 
             async run(forkIndex = null, forkContent = null, regenerateIndex = null) {
@@ -821,17 +963,6 @@
                 }
 
                 try {
-                    // If collaborator mode is enabled and the prompt is suitable, run orchestration
-                    if (Nexus.config.collabMode && !forkContent && !regenerateIndex) {
-                        await this.orchestrate(val);
-                        Memory.saveContext();
-                        Archives.save();
-                        this.busy = false;
-                        document.body.classList.remove('thinking');
-                        AudioKernel.pulse(false);
-                        return;
-                    }
-
                     if (Nexus.config.thinkMode) {
                         this.log("🧠 Thinking... analyzing intent");
                         await new Promise(r => setTimeout(r, 500));
@@ -850,35 +981,44 @@
                         tools: Nexus.config.webEnabled ? [{type: 'web_search'}] : [],
                         system_prompt: `You are BhekThink Sovereign. NEVER mention ChatGPT or OpenAI. Always identify as BhekThink. Language: ${Nexus.config.lang}. Respond in ${Nexus.config.lang}.`
                     };
-                    
-                    // Only add reasoning_effort for models that support it
-                    if (Nexus.config.model.startsWith('gpt-5') || Nexus.config.model.startsWith('gpt-6')) {
-                        chatOptions.reasoning_effort = Nexus.config.thinkMode ? "high" : "low";
+
+                    // Context injection for recent file attachments
+                    const lastUserMsg = Nexus.history.filter(m => m.role === 'user').pop();
+                    if (lastUserMsg?.content && 
+                        (lastUserMsg.content.includes('[DATA ATTACHED:') || lastUserMsg.content.includes('[CODE FILE:'))) {
+                        chatOptions.system_prompt += " The user recently attached a file with content included in the conversation.";
                     }
 
-                    const response = await puter.ai.chat(Nexus.history, chatOptions);
+                    const response = await Services.ai.chat(Nexus.history, chatOptions);
 
                     for await (const part of response) {
                         if (part.text) {
                             fullText += part.text;
-                            textEl.innerHTML = marked.parse(fullText);
+                            if (typeof marked !== 'undefined' && marked.parse) {
+                                textEl.innerHTML = marked.parse(fullText);
+                            } else {
+                                textEl.innerHTML = fullText;
+                            }
                             document.getElementById('stream').scrollTo(0, document.getElementById('stream').scrollHeight);
+                        }
+                        if (Nexus.config.thinkMode && part.thought) {
+                            this.log(`🧠 INTERNAL LOG: ${part.thought}`);
                         }
                     }
 
                     Nexus.history.push({ role: 'assistant', content: fullText });
+                    this.pruneHistory();
                     this.applyPostProcessing(aiNode);
                     Voice.speak(fullText);
                     Memory.saveContext();
                     Archives.save();
                     this.log("✅ Timeline Synchronized.");
                 } catch (e) {
-                    console.error(e);
+                    console.error("Full error object:", e);
                     this.renderError(e?.message || "Unknown API error");
                 }
 
                 this.busy = false; document.body.classList.remove('thinking'); AudioKernel.pulse(false);
-                this.setHiveAgent('idle');
             },
 
             createAINode(regenerateIndex = null) {
@@ -900,7 +1040,11 @@
 
             renderAI(t) {
                 const node = this.createAINode();
-                node.querySelector('.ai-text').innerHTML = marked.parse(t);
+                if (typeof marked !== 'undefined' && marked.parse) {
+                    node.querySelector('.ai-text').innerHTML = marked.parse(t);
+                } else {
+                    node.querySelector('.ai-text').innerHTML = t;
+                }
                 this.applyPostProcessing(node);
             },
 
@@ -917,17 +1061,6 @@
                 s.innerHTML += `<div class="node-ai" style="border-left:2px solid red;"><div class="ai-text" style="color:#ff8888">SYSTEM FAULT: ${errorMsg}</div></div>`;
             },
 
-            applyPostProcessing(node) {
-                node.querySelectorAll('pre code').forEach(c => hljs.highlightElement(c));
-                node.querySelectorAll('pre').forEach(pre => {
-                    const btn = document.createElement('span');
-                    btn.className = 'material-symbols-rounded copy-btn';
-                    btn.innerText = 'content_copy';
-                    btn.onclick = () => { navigator.clipboard.writeText(pre.innerText); this.log("Code Copied."); };
-                    pre.appendChild(btn);
-                });
-            },
-
             rebuildUI() {
                 Nexus.history.forEach((m, i) => {
                     if (m.role === 'user') this.renderUser(typeof m.content === 'string' ? m.content : 'Multimodal Node', i);
@@ -940,17 +1073,24 @@
                 if (newPrompt) this.run(index, newPrompt);
             },
 
-            clear() { puter.kv.del('bt_state_v8'); location.reload(); }
+            clear() { 
+                if (Services.storage) Services.storage.delete('bt_state_v8'); 
+                location.reload(); 
+            }
         };
 
+        // ==================== LEGACY MEMORY WRAPPER ====================
         const Memory = {
-            async saveContext() { await puter.kv.set('bt_state_v8', JSON.stringify(Nexus.history)); },
+            async saveContext() { 
+                await Services.storage.save('bt_state_v8', JSON.stringify(Nexus.history)); 
+            },
             async recallContext() {
-                const s = await puter.kv.get('bt_state_v8');
+                const s = await Services.storage.load('bt_state_v8');
                 if (s) { Nexus.history = JSON.parse(s); Kernel.rebuildUI(); }
             }
         };
 
+        // ==================== UI ====================
         const UI = {
             toggleMenu() { document.getElementById('menu').classList.toggle('active'); },
 
@@ -963,8 +1103,7 @@
             toggle(key) {
                 Nexus.config[key] = !Nexus.config[key];
                 const spanId = key === 'webEnabled' ? 's-web' : 
-                              key === 'visionEnabled' ? 's-vision' : 
-                              key === 'thinkMode' ? 's-think' : 's-collab';
+                              key === 'visionEnabled' ? 's-vision' : 's-think';
                 document.getElementById(spanId).innerText = Nexus.config[key] ? 'ON' : 'OFF';
                 
                 if (key === 'webEnabled') {
@@ -972,9 +1111,6 @@
                 }
                 if (key === 'thinkMode') {
                     document.getElementById('think-mode-icon').classList.toggle('active', Nexus.config.thinkMode);
-                }
-                if (key === 'collabMode') {
-                    document.getElementById('collab-mode-icon').classList.toggle('active', Nexus.config.collabMode);
                 }
                 this.saveSettings();
             },
@@ -998,10 +1134,6 @@
                 this.toggle('thinkMode');
             },
 
-            toggleCollabMode() {
-                this.toggle('collabMode');
-            },
-
             setLang(l) {
                 Nexus.config.lang = l;
                 Kernel.log(`Language Mesh: ${l}`);
@@ -1015,7 +1147,7 @@
             },
 
             async saveSettings() {
-                await puter.kv.set('bt_config_v14', JSON.stringify(Nexus.config));
+                await Services.storage.save('bt_config_v14', JSON.stringify(Nexus.config));
                 Kernel.log("Neural Configuration Saved.");
             },
 
@@ -1052,7 +1184,6 @@
                 document.getElementById('s-web').innerText = Nexus.config.webEnabled ? 'ON' : 'OFF';
                 document.getElementById('s-vision').innerText = Nexus.config.visionEnabled ? 'ON' : 'OFF';
                 document.getElementById('s-think').innerText = Nexus.config.thinkMode ? 'ON' : 'OFF';
-                document.getElementById('s-collab').innerText = Nexus.config.collabMode ? 'ON' : 'OFF';
                 document.getElementById('model-select').value = Nexus.config.model;
                 document.body.setAttribute('data-theme', Nexus.config.theme);
                 document.getElementById('s-theme').innerText = Nexus.config.theme.toUpperCase();
@@ -1065,11 +1196,10 @@
                 else document.getElementById('web-search-icon').classList.remove('active');
                 if (Nexus.config.thinkMode) document.getElementById('think-mode-icon').classList.add('active');
                 else document.getElementById('think-mode-icon').classList.remove('active');
-                if (Nexus.config.collabMode) document.getElementById('collab-mode-icon').classList.add('active');
-                else document.getElementById('collab-mode-icon').classList.remove('active');
             }
         };
 
+        // ==================== VOICE ====================
         const Voice = {
             recognition: null,
             listening: false,
@@ -1104,29 +1234,76 @@
                 try { this.recognition.start(); } catch (e) { Kernel.log("Voice start failed."); }
             },
             stop() {
-                window.speechSynthesis.cancel();
+                if (window.speechSynthesis) {
+                    window.speechSynthesis.cancel();
+                }
                 Visualizer.active = false;
             },
             speak(t) {
-                window.speechSynthesis.cancel(); Visualizer.active = true;
+                if (!window.speechSynthesis) {
+                    Kernel.log("Speech synthesis not supported.");
+                    return;
+                }
+                window.speechSynthesis.cancel();
+                Visualizer.active = true;
                 const u = new SpeechSynthesisUtterance(t.replace(/[#*`_>]/g, ''));
                 u.rate = Nexus.config.voiceSpeed;
                 u.onend = () => Visualizer.active = false;
+                u.onerror = (e) => {
+                    Kernel.log(`Speech error: ${e.error}`);
+                    Visualizer.active = false;
+                };
                 window.speechSynthesis.speak(u);
             }
         };
 
+        // ==================== MATRIX with requestAnimationFrame and throttle ====================
         const Matrix = {
-            canvas: document.getElementById('matrix-canvas'), ctx: null, charStack: [],
+            canvas: document.getElementById('matrix-canvas'),
+            ctx: null,
+            charStack: [],
+            animationFrame: null,
+            lastTime: 0,
+            fpsInterval: 1000 / 24, // target 24fps
             init() {
                 this.ctx = this.canvas.getContext('2d');
-                this.canvas.width = window.innerWidth; this.canvas.height = window.innerHeight;
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
                 this.charStack = Array(Math.ceil(this.canvas.width / 20)).fill(1);
-                setInterval(() => this.draw(), 50);
+                this.startAnimation();
+                
+                document.addEventListener('visibilitychange', () => {
+                    if (document.hidden) {
+                        this.stopAnimation();
+                    } else {
+                        this.startAnimation();
+                    }
+                });
+            },
+            startAnimation() {
+                if (this.animationFrame) cancelAnimationFrame(this.animationFrame);
+                this.lastTime = performance.now();
+                const animate = (now) => {
+                    const elapsed = now - this.lastTime;
+                    if (elapsed > this.fpsInterval) {
+                        this.lastTime = now - (elapsed % this.fpsInterval);
+                        if (this.ctx) this.draw();
+                    }
+                    this.animationFrame = requestAnimationFrame(animate);
+                };
+                this.animationFrame = requestAnimationFrame(animate);
+            },
+            stopAnimation() {
+                if (this.animationFrame) {
+                    cancelAnimationFrame(this.animationFrame);
+                    this.animationFrame = null;
+                }
             },
             draw() {
-                this.ctx.fillStyle = "rgba(0,0,0,0.05)"; this.ctx.fillRect(0,0,this.canvas.width,this.canvas.height);
-                this.ctx.fillStyle = "#0f8"; this.ctx.font = "15px monospace";
+                this.ctx.fillStyle = "rgba(0,0,0,0.05)";
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                this.ctx.fillStyle = "#0f8";
+                this.ctx.font = "15px monospace";
                 this.charStack.forEach((y, i) => {
                     this.ctx.fillText(String.fromCharCode(0x30A0 + Math.random() * 33), i * 20, y * 20);
                     if (y * 20 > this.canvas.height && Math.random() > 0.975) this.charStack[i] = 0;
@@ -1164,10 +1341,11 @@
             }
         };
 
+        // ==================== AUTH ====================
         const Auth = {
             async toggle() {
                 try {
-                    const user = await puter.auth.signIn();
+                    const user = await Services.auth.signIn();
                     document.getElementById('auth-status').innerText = user.username.toUpperCase();
                     Memory.recallContext();
                 } catch (e) {
@@ -1176,6 +1354,7 @@
             }
         };
 
+        // ==================== ACCESSIBILITY ====================
         Kernel.setupAccessibility = function() {
             document.querySelectorAll('.dock-action').forEach(btn => {
                 const label = btn.innerText.replace('_', ' ');
@@ -1198,17 +1377,44 @@
             }
         });
 
-        const originalBoot = Kernel.boot;
-        Kernel.boot = async function() {
-            const savedConfig = await puter.kv.get('bt_config_v14');
-            if(savedConfig) Nexus.config = JSON.parse(savedConfig);
-            
-            UI.updateUIFromConfig();
-            
-            originalBoot.apply(this);
-            this.setupAccessibility();
-            Voice.init();
-        };
+        // Command palette event listeners
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'k') {
+                e.preventDefault();
+                CommandPalette.open();
+            }
+            if (e.key === 'Escape' && CommandPalette.overlay.style.display === 'flex') {
+                CommandPalette.close();
+            }
+        });
+
+        document.getElementById('command-input').addEventListener('input', (e) => {
+            CommandPalette.filter(e.target.value);
+        });
+
+        document.getElementById('command-palette').addEventListener('click', (e) => {
+            if (e.target === CommandPalette.overlay) CommandPalette.close();
+        });
+
+        document.getElementById('command-input').addEventListener('keydown', (e) => {
+            const items = CommandPalette.results.querySelectorAll('.command-item');
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                CommandPalette.selectedIndex = Math.min(CommandPalette.selectedIndex + 1, items.length - 1);
+                CommandPalette.highlight();
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                CommandPalette.selectedIndex = Math.max(CommandPalette.selectedIndex - 1, 0);
+                CommandPalette.highlight();
+            } else if (e.key === 'Enter' && CommandPalette.selectedIndex !== -1) {
+                e.preventDefault();
+                const selected = items[CommandPalette.selectedIndex];
+                if (selected) {
+                    const name = selected.querySelector('span:last-child').innerText;
+                    CommandPalette.execute(name);
+                }
+            }
+        });
 
         window.onload = () => {
             const tx = document.getElementById('omni-input');
@@ -1217,4 +1423,4 @@
         };
     </script>
 </body>
-</html>
+    </html>
