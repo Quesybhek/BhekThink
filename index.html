@@ -3,29 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>BhekThink v1016.0 | Sovereign Convergence</title>
+    <title>BhekThink v1018.0 | Sovereign Convergence</title>
     
     <!-- PWA Support -->
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icon-192.png">
-    <meta name="theme-color" content="#000000">
+    <meta name="theme-color" content="#000000" id="theme-color-meta">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
     <!-- iOS Splash Screens (Generate actual images and replace hrefs) -->
-    <!-- iPhone 12/13/14 (Portrait) -->
     <link rel="apple-touch-startup-image" href="splash/iphone12_portrait.png" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3)">
-    <!-- iPhone 12/13/14 (Landscape) -->
     <link rel="apple-touch-startup-image" href="splash/iphone12_landscape.png" media="(device-width: 844px) and (device-height: 390px) and (-webkit-device-pixel-ratio: 3)">
-    <!-- iPhone 14 Pro Max (Portrait) -->
     <link rel="apple-touch-startup-image" href="splash/iphone14pro_portrait.png" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3)">
-    <!-- iPhone 14 Pro Max (Landscape) -->
     <link rel="apple-touch-startup-image" href="splash/iphone14pro_landscape.png" media="(device-width: 932px) and (device-height: 430px) and (-webkit-device-pixel-ratio: 3)">
-    <!-- iPad Pro 11" (Portrait) -->
     <link rel="apple-touch-startup-image" href="splash/ipadpro11_portrait.png" media="(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2)">
-    <!-- iPad Pro 11" (Landscape) -->
     <link rel="apple-touch-startup-image" href="splash/ipadpro11_landscape.png" media="(device-width: 1194px) and (device-height: 834px) and (-webkit-device-pixel-ratio: 2)">
-    <!-- Add more sizes as needed – see https://developer.apple.com/design/human-interface-guidelines/spash-screens -->
 
     <script src="https://js.puter.com/v2/"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
@@ -35,21 +28,40 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
 
     <style>
+        /* Light theme variables */
+        :root[data-theme="light"] {
+            --bg: #f5f5f7;
+            --accent: #0066cc;
+            --purple: #8a2be2;
+            --text: #1d1d1f;
+            --terminal: #e8e8ed;
+            --log-green: #006400;
+            --bt-glow: 0 0 25px rgba(0, 102, 204, 0.3);
+            --panel: #ffffff;
+            --dim: #6e6e73;
+        }
+
+        /* Dark theme (default) */
         :root {
-            --bg: #000000; --accent: #00ff88; --purple: #7000ff;
-            --text: #e8eaed; --terminal: #000803; --log-green: #00ff41;
+            --bg: #000000;
+            --accent: #00ff88;
+            --purple: #7000ff;
+            --text: #e8eaed;
+            --terminal: #000803;
+            --log-green: #00ff41;
             --bt-glow: 0 0 25px rgba(0, 255, 136, 0.4);
-            --panel: #0d0d0d; --dim: #5f6368;
+            --panel: #0d0d0d;
+            --dim: #5f6368;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', system-ui, sans-serif; }
-        body { background: var(--bg); color: var(--text); height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
+        body { background: var(--bg); color: var(--text); height: 100dvh; display: flex; flex-direction: column; overflow: hidden; transition: background-color 0.3s ease, color 0.3s ease; }
 
         #matrix-canvas { position: fixed; inset: 0; z-index: -1; opacity: 0.12; transition: opacity 1s ease; }
         body.thinking #matrix-canvas { opacity: 0.5; }
 
         #induction {
-            position: fixed; inset: 0; background: #000; z-index: 10000;
+            position: fixed; inset: 0; background: var(--bg); z-index: 10000;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             padding: 8% 10%; transition: 1.2s cubic-bezier(1,0,0,1); text-align: center;
         }
@@ -75,22 +87,22 @@
 
         #menu { 
             position: fixed; top: 0; left: -100%; width: 85vw; max-width: 380px; height: 100%; 
-            background: rgba(2, 2, 2, 0.98); z-index: 2000; transition: 0.5s cubic-bezier(1,0,0,1); 
+            background: var(--panel); z-index: 2000; transition: 0.5s cubic-bezier(1,0,0,1); 
             padding: 30px 20px; border-right: 1px solid var(--accent); backdrop-filter: blur(25px);
             display: flex; flex-direction: column; gap: 20px; overflow-y: auto;
         }
         #menu.active { left: 0; }
-        .sidebar-section { border-top: 1px solid #222; padding-top: 15px; }
+        .sidebar-section { border-top: 1px solid var(--dim); padding-top: 15px; }
         .section-label { font-size: 10px; font-weight: 950; color: var(--accent); letter-spacing: 3px; margin-bottom: 12px; text-transform: uppercase; }
         
         .slider-group { margin-bottom: 15px; }
         .slider-meta { display: flex; justify-content: space-between; font-size: 11px; color: var(--dim); margin-bottom: 5px; }
         input[type="range"] { width: 100%; accent-color: var(--accent); cursor: pointer; }
-        select.model-select { width: 100%; background: #0a0a0a; border: 1px solid #222; color: #fff; padding: 8px; border-radius: 8px; margin-bottom: 10px; }
+        select.model-select { width: 100%; background: var(--panel); border: 1px solid var(--dim); color: var(--text); padding: 8px; border-radius: 8px; margin-bottom: 10px; }
 
         .grid-tools { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .tool-btn { background: #0a0a0a; border: 1px solid #222; color: #fff; padding: 12px; border-radius: 10px; font-size: 11px; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s; font-weight: 600; }
-        .tool-btn:hover { border-color: var(--accent); background: #111; }
+        .tool-btn { background: var(--panel); border: 1px solid var(--dim); color: var(--text); padding: 12px; border-radius: 10px; font-size: 11px; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s; font-weight: 600; }
+        .tool-btn:hover { border-color: var(--accent); background: var(--bg); }
 
         header { 
             padding: 20px 30px; 
@@ -98,18 +110,18 @@
             justify-content: space-between; 
             align-items: center; 
             z-index: 100; 
-            background: rgba(0,0,0,0.4); 
+            background: var(--panel); 
             backdrop-filter: blur(10px); 
             padding-top: max(20px, env(titlebar-area-height, 0px)); 
             padding-left: env(titlebar-area-x, 30px);
             padding-right: env(titlebar-area-width, auto);
         }
-        .live-tag { color: var(--accent); font-weight: 950; letter-spacing: 4px; display: flex; align-items: center; gap: 10px; cursor: pointer; }
+        .live-tag { color: var(--accent); font-weight: 950; letter-spacing: 4px; font-size: 14px; }
 
-        #stream { flex: 1; overflow-y: auto; padding: 40px; display: flex; flex-direction: column; gap: 40px; scroll-behavior: smooth; dir: auto; }
-        .node-user { align-self: flex-end; max-width: 85%; font-size: 24px; color: #fff; border-right: 4px solid var(--accent); padding-right: 20px; text-align: right; position: relative; }
+        #stream { flex: 1; overflow-y: auto; padding: 40px; display: flex; flex-direction: column; gap: 40px; scroll-behavior: smooth; }
+        .node-user { align-self: flex-end; max-width: 85%; font-size: 24px; color: var(--text); border-right: 4px solid var(--accent); padding-right: 20px; text-align: right; position: relative; }
         .node-ai { width: 100%; max-width: 950px; margin-inline: auto; animation: fadeIn 0.5s ease; position: relative; }
-        .ai-text { font-size: 19px; line-height: 1.8; color: #ced4da; }
+        .ai-text { font-size: 19px; line-height: 1.8; color: var(--text); }
 
         .edit-trigger { position: absolute; left: -30px; top: 50%; transform: translateY(-50%); opacity: 0; cursor: pointer; color: var(--dim); transition: 0.2s; }
         .node-user:hover .edit-trigger { opacity: 1; }
@@ -120,7 +132,7 @@
         }
         .node-ai:hover .regenerate-btn { opacity: 1; }
 
-        .dock-container { padding: 20px; display: flex; flex-direction: column; align-items: center; background: linear-gradient(transparent, #000 70%); gap: 10px; }
+        .dock-container { padding: 20px; display: flex; flex-direction: column; align-items: center; background: linear-gradient(transparent, var(--bg) 70%); gap: 10px; }
         
         #vision-preview-container { 
             display: none; position: relative; width: 60px; height: 60px; 
@@ -129,33 +141,35 @@
         }
         #vision-preview-img { width: 100%; height: 100%; object-fit: cover; }
         .preview-close { 
-            position: absolute; top: 0; right: 0; background: rgba(0,0,0,0.7); 
-            color: #fff; font-size: 14px; cursor: pointer; padding: 2px; 
+            position: absolute; top: 0; right: 0; background: var(--panel); 
+            color: var(--text); font-size: 14px; cursor: pointer; padding: 2px; 
         }
 
         .omni-dock {
             width: 100%; max-width: 850px; background: var(--panel); border-radius: 40px;
-            padding: 15px 30px; display: flex; align-items: center; gap: 15px; border: 1px solid #222;
+            padding: 15px 30px; display: flex; align-items: center; gap: 15px; border: 1px solid var(--dim);
+            flex-wrap: wrap;
         }
-        textarea { flex: 1; background: transparent; border: none; color: #fff; font-size: 18px; outline: none; resize: none; max-height: 200px; dir: auto; }
+        textarea { flex: 1; background: transparent; border: none; color: var(--text); font-size: 18px; outline: none; resize: none; max-height: 200px; min-width: 200px; }
         .dock-action { color: var(--accent); cursor: pointer; font-size: 24px; transition: 0.2s; }
         .dock-action:hover { transform: scale(1.1); }
+        .dock-action.active { color: var(--text); text-shadow: 0 0 10px var(--accent); }
 
         .artificer-img { width: 100%; border-radius: 20px; margin-top: 15px; border: 1px solid var(--accent); }
-        pre { position: relative; padding: 15px; background: #050505 !important; border-radius: 12px; margin: 15px 0; overflow-x: auto; }
+        pre { position: relative; padding: 15px; background: var(--panel) !important; border-radius: 12px; margin: 15px 0; overflow-x: auto; }
         .copy-btn { position: absolute; right: 10px; top: 10px; color: var(--accent); cursor: pointer; opacity: 0.5; }
 
         /* Neural Context Map */
         #context-map-overlay {
             position: fixed; top: 80px; right: 20px; width: 280px; max-height: 60vh;
-            background: rgba(10, 10, 10, 0.95); border: 1px solid var(--accent);
+            background: var(--panel); border: 1px solid var(--accent);
             border-radius: 15px; z-index: 1500; display: none; flex-direction: column;
             backdrop-filter: blur(15px); box-shadow: var(--bt-glow); padding: 15px;
         }
         .map-header { font-size: 10px; font-weight: 900; color: var(--accent); letter-spacing: 2px; margin-bottom: 10px; display: flex; justify-content: space-between; }
-        #map-list { overflow-y: auto; font-size: 12px; color: #bbb; }
-        .map-item { padding: 8px; border-bottom: 1px solid #222; cursor: pointer; transition: 0.2s; }
-        .map-item:hover { background: rgba(0, 255, 136, 0.1); color: #fff; }
+        #map-list { overflow-y: auto; font-size: 12px; color: var(--text); }
+        .map-item { padding: 8px; border-bottom: 1px solid var(--dim); cursor: pointer; transition: 0.2s; }
+        .map-item:hover { background: var(--bg); color: var(--accent); }
         .map-trigger-btn { 
             position: fixed; top: 100px; right: 20px; background: var(--panel); 
             border: 1px solid var(--accent); color: var(--accent); padding: 10px; 
@@ -168,7 +182,7 @@
         @keyframes slideUp { from { transform: translate(-50%, 100%); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }
     </style>
 </head>
-<body class="bhekthink-absolute">
+<body class="bhekthink-absolute" data-theme="dark">
 
     <canvas id="matrix-canvas"></canvas>
 
@@ -186,7 +200,10 @@
     </div>
 
     <div id="menu">
-        <div style="font-weight:900; color:var(--accent); letter-spacing:5px; font-size: 12px; margin-bottom: 20px;">SYSTEM CONTROL</div>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <div style="font-weight:900; color:var(--accent); letter-spacing:5px; font-size: 12px;">SYSTEM CONTROL</div>
+            <span class="material-symbols-rounded" onclick="UI.toggleMenu()" style="cursor: pointer; color: var(--accent);">close</span>
+        </div>
         
         <div class="sidebar-section">
             <div class="section-label">Neural Tuning</div>
@@ -228,21 +245,27 @@
             <div class="grid-tools">
                 <button class="tool-btn" onclick="UI.toggle('webEnabled')"><span class="material-symbols-rounded">public</span> WEB: <span id="s-web">ON</span></button>
                 <button class="tool-btn" onclick="UI.toggle('visionEnabled')"><span class="material-symbols-rounded">visibility</span> VISION: <span id="s-vision">ON</span></button>
+                <button class="tool-btn" onclick="UI.toggle('thinkMode')"><span class="material-symbols-rounded">psychology</span> THINK: <span id="s-think">OFF</span></button>
+                <button class="tool-btn" onclick="UI.toggleTheme()"><span class="material-symbols-rounded">dark_mode</span> THEME: <span id="s-theme">DARK</span></button>
             </div>
         </div>
 
         <div class="sidebar-section" style="flex:1">
             <div class="section-label">Neural Logs</div>
-            <div id="terminal" style="height:150px; background:#000; padding:10px; font-family:monospace; font-size:10px; color:var(--log-green); overflow-y:auto;"></div>
+            <div id="terminal" style="height:150px; background:var(--terminal); padding:10px; font-family:monospace; font-size:10px; color:var(--log-green); overflow-y:auto;"></div>
         </div>
     </div>
 
     <header>
-        <div class="live-tag" onclick="UI.toggleMenu()">
-            <span class="material-symbols-rounded" aria-hidden="true">hub</span> BHEKTHINK v1016.0
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <span class="material-symbols-rounded dock-action" onclick="UI.toggleMenu()" style="font-size: 28px;" aria-label="Menu">menu</span>
+            <div class="live-tag">BHEKTHINK v1018.0</div>
         </div>
         <canvas id="visualizer" width="140" height="30" aria-label="Audio Visualizer"></canvas>
         <div style="display: flex; gap: 10px;">
+            <button class="tool-btn" onclick="UI.newChat()" style="padding: 5px 10px;" aria-label="New Chat">
+                <span class="material-symbols-rounded" style="font-size:18px">chat</span>
+            </button>
             <button class="tool-btn" onclick="UI.exportChat()" style="padding: 5px 10px;" aria-label="Export Conversation">
                 <span class="material-symbols-rounded" style="font-size:18px">download</span>
             </button>
@@ -270,6 +293,9 @@
         <div class="omni-dock">
             <input type="file" id="file-in" hidden onchange="Kernel.handleFiles(this.files)" multiple>
             <span class="material-symbols-rounded dock-action" onclick="document.getElementById('file-in').click()">add_circle</span>
+            <span class="material-symbols-rounded dock-action" onclick="Kernel.imageMode()" style="color:var(--accent)">palette</span>
+            <span class="material-symbols-rounded dock-action" onclick="UI.toggleWebSearch()" id="web-search-icon" style="color:var(--accent)">public</span>
+            <span class="material-symbols-rounded dock-action" onclick="UI.toggleThinkMode()" id="think-mode-icon" style="color:var(--accent)">psychology</span>
             <textarea id="omni-input" placeholder="Address Sovereign Singularity..." rows="1"></textarea>
             <span class="material-symbols-rounded dock-action" onclick="Voice.stop()">volume_off</span>
             <span class="material-symbols-rounded dock-action" id="mic-btn" onclick="Voice.listen()">mic</span>
@@ -287,15 +313,17 @@
                 voiceSpeed: 1.1,
                 webEnabled: true,
                 visionEnabled: true,
+                thinkMode: false,
                 lang: 'English',
-                model: 'gpt-4o'
+                model: 'gpt-4o',
+                theme: 'dark' // 'dark' or 'light'
             }
         };
 
         const Kernel = {
             busy: false,
             pendingImage: null,
-            updateRegistration: null, // Store service worker registration for update
+            updateRegistration: null,
 
             boot() {
                 document.getElementById('induction').style.opacity = '0';
@@ -305,19 +333,15 @@
                     this.setupInteractions();
                     Memory.recallContext();
                     
-                    // Service Worker Registration with Update Detection
                     if ('serviceWorker' in navigator) {
                         navigator.serviceWorker.register('/BhekThink/sw.js')
                             .then(reg => {
                                 this.updateRegistration = reg;
                                 this.log("Sovereign Service Worker: ACTIVE");
-                                
-                                // Check for updates
                                 reg.addEventListener('updatefound', () => {
                                     const newWorker = reg.installing;
                                     newWorker.addEventListener('statechange', () => {
                                         if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                                            // New version available
                                             this.showUpdateNotification();
                                         }
                                     });
@@ -326,7 +350,6 @@
                             .catch(err => this.log(`SW Error: ${err}`));
                     }
 
-                    // File Handler Integration (launchQueue)
                     if ('launchQueue' in window) {
                         launchQueue.setConsumer(async (launchParams) => {
                             if (!launchParams.files.length) return;
@@ -338,7 +361,6 @@
                         });
                     }
 
-                    // Handle Share Target and Shortcuts via URL
                     const params = new URLSearchParams(window.location.search);
                     if (params.has('text') || params.has('url') || params.has('title')) {
                         const sharedData = `${params.get('title') || ''} ${params.get('text') || ''} ${params.get('url') || ''}`.trim();
@@ -356,10 +378,8 @@
 
             applyUpdate() {
                 if (this.updateRegistration && this.updateRegistration.waiting) {
-                    // Send message to waiting service worker to skip waiting
                     this.updateRegistration.waiting.postMessage({ type: 'SKIP_WAITING' });
                 }
-                // Reload to activate new version
                 window.location.reload();
             },
 
@@ -376,6 +396,17 @@
                     const items = e.clipboardData.items;
                     for (let item of items) if (item.kind === 'file') this.handleFiles([item.getAsFile()]);
                 };
+
+                // Close menu when clicking outside
+                document.addEventListener('click', (e) => {
+                    const menu = document.getElementById('menu');
+                    const menuButton = document.querySelector('.dock-action[onclick*="toggleMenu"]');
+                    if (menu.classList.contains('active') && 
+                        !menu.contains(e.target) && 
+                        menuButton && !menuButton.contains(e.target)) {
+                        UI.toggleMenu();
+                    }
+                });
             },
 
             async handleFiles(files) {
@@ -394,7 +425,6 @@
                             Nexus.history.push({ role: 'user', content: `[DATA ATTACHED: ${file.name}]\n${text}` });
                             this.renderAI(`PDF **${file.name}** has been character-mapped and integrated.`);
 
-                            // Generate context map for large documents
                             if (text.length > 3000) {
                                 this.generateContextMap(file.name, text);
                             }
@@ -419,19 +449,45 @@
                 }
             },
 
-            // Neural Context Map Generator
+            imageMode() {
+                const input = document.getElementById('omni-input');
+                const val = input.value.trim();
+                if (!val) {
+                    input.value = "Create an image of ";
+                    input.focus();
+                } else {
+                    this.runWithImageMode(val);
+                }
+            },
+
+            async runWithImageMode(prompt) {
+                if (this.busy) return;
+                this.busy = true; document.body.classList.add('thinking'); AudioKernel.pulse(true);
+                
+                this.log("🎨 Artificer engaged: generating image...");
+                this.renderUser(prompt, Nexus.history.length);
+                Nexus.history.push({ role: 'user', content: prompt });
+                
+                try {
+                    const img = await puter.ai.txt2img(prompt);
+                    this.renderImage(img.src);
+                    Nexus.history.push({ role: 'assistant', content: `Generated image for: ${prompt}` });
+                    Memory.saveContext();
+                } catch (e) { this.renderError(e.message); }
+                
+                this.busy = false; document.body.classList.remove('thinking'); AudioKernel.pulse(false);
+            },
+
             generateContextMap(fileName, text) {
                 const trigger = document.getElementById('map-trigger');
                 const list = document.getElementById('map-list');
                 
-                // Break long text into "Neural Clusters" (chunks of ~2000 chars)
                 const chunks = text.match(/.{1,2000}/g) || [];
                 
                 list.innerHTML = `<div style="color:var(--accent); margin-bottom:8px;">Source: ${fileName}</div>`;
                 chunks.forEach((chunk, i) => {
                     const item = document.createElement('div');
                     item.className = 'map-item';
-                    // Extract first 40 chars as a "heading"
                     const heading = chunk.substring(0, 40).replace(/\n/g, ' ') + "...";
                     item.innerHTML = `<strong>Cluster ${i+1}:</strong> ${heading}`;
                     item.onclick = () => {
@@ -462,13 +518,10 @@
                 const input = document.getElementById('omni-input');
                 let val = forkContent || input.value.trim();
                 
-                // Handle regenerate: use the last user message
                 if (regenerateIndex !== null) {
-                    // Find the last user message before this AI node
                     for (let i = regenerateIndex - 1; i >= 0; i--) {
                         if (Nexus.history[i].role === 'user') {
                             val = typeof Nexus.history[i].content === 'string' ? Nexus.history[i].content : "Regenerate with multimodal";
-                            // Remove this AI message and all after it
                             Nexus.history = Nexus.history.slice(0, regenerateIndex);
                             document.getElementById('stream').innerHTML = "";
                             this.rebuildUI();
@@ -496,6 +549,7 @@
                         ];
                         this.renderImage(this.pendingImage);
                         this.clearStagedImage();
+                        this.log("🔍 Vision mode active – analyzing image...");
                     } else if (this.pendingImage) {
                         this.log("Vision disabled – ignoring staged image.");
                         this.clearStagedImage();
@@ -508,17 +562,23 @@
                 }
 
                 try {
+                    if (Nexus.config.thinkMode) {
+                        this.log("🧠 Thinking... analyzing intent");
+                        await new Promise(r => setTimeout(r, 500)); // Simulate thinking
+                    }
+
                     const aiNode = this.createAINode(regenerateIndex);
                     const textEl = aiNode.querySelector('.ai-text');
                     let fullText = "";
+
+                    this.log("⚡ Synthesizing Sovereign response...");
 
                     const response = await puter.ai.chat(Nexus.history, {
                         model: Nexus.config.model,
                         stream: true,
                         temperature: parseFloat(Nexus.config.temp),
                         tools: Nexus.config.webEnabled ? [{type: 'web_search'}] : [],
-                        // STRONGER SYSTEM PROMPT – forces identity as BhekThink
-                        system_prompt: `You are BhekThink Sovereign, a sovereign AI assistant. NEVER mention that you are ChatGPT, OpenAI, or any other AI model. Always identify as BhekThink. Language: ${Nexus.config.lang}. Respond in ${Nexus.config.lang}.`
+                        system_prompt: `You are BhekThink Sovereign. NEVER mention ChatGPT or OpenAI. Always identify as BhekThink. Language: ${Nexus.config.lang}. Respond in ${Nexus.config.lang}.`
                     });
 
                     for await (const part of response) {
@@ -533,6 +593,7 @@
                     this.applyPostProcessing(aiNode);
                     Voice.speak(fullText);
                     Memory.saveContext();
+                    this.log("✅ Response complete.");
                 } catch (e) { this.renderError(e.message); }
 
                 this.busy = false; document.body.classList.remove('thinking'); AudioKernel.pulse(false);
@@ -609,30 +670,65 @@
 
         const UI = {
             toggleMenu() { document.getElementById('menu').classList.toggle('active'); },
+
             setParam(key, val) { 
                 Nexus.config[key] = val; 
                 document.getElementById(`v-${key === 'voiceSpeed' ? 'rate' : 'temp'}`).innerText = val; 
                 this.saveSettings();
             },
+
             toggle(key) {
                 Nexus.config[key] = !Nexus.config[key];
-                document.getElementById(`s-${key === 'webEnabled' ? 'web' : 'vision'}`).innerText = Nexus.config[key] ? 'ON' : 'OFF';
+                const spanId = key === 'webEnabled' ? 's-web' : key === 'visionEnabled' ? 's-vision' : 's-think';
+                document.getElementById(spanId).innerText = Nexus.config[key] ? 'ON' : 'OFF';
+                
+                // Update dock icons
+                if (key === 'webEnabled') {
+                    document.getElementById('web-search-icon').classList.toggle('active', Nexus.config.webEnabled);
+                }
+                if (key === 'thinkMode') {
+                    document.getElementById('think-mode-icon').classList.toggle('active', Nexus.config.thinkMode);
+                }
                 this.saveSettings();
             },
+
+            toggleTheme() {
+                Nexus.config.theme = Nexus.config.theme === 'dark' ? 'light' : 'dark';
+                document.body.setAttribute('data-theme', Nexus.config.theme);
+                document.getElementById('s-theme').innerText = Nexus.config.theme.toUpperCase();
+                // Update theme-color meta tag
+                const metaTheme = document.querySelector('meta[name="theme-color"]');
+                if (metaTheme) {
+                    metaTheme.setAttribute('content', Nexus.config.theme === 'dark' ? '#000000' : '#f5f5f7');
+                }
+                this.saveSettings();
+            },
+
+            toggleWebSearch() {
+                this.toggle('webEnabled');
+            },
+
+            toggleThinkMode() {
+                this.toggle('thinkMode');
+            },
+
             setLang(l) {
                 Nexus.config.lang = l;
                 Kernel.log(`Language Mesh: ${l}`);
                 this.saveSettings();
             },
+
             setModel(m) {
                 Nexus.config.model = m;
                 Kernel.log(`Model switched to ${m}`);
                 this.saveSettings();
             },
+
             async saveSettings() {
-                await puter.kv.set('bt_config_v11', JSON.stringify(Nexus.config));
+                await puter.kv.set('bt_config_v12', JSON.stringify(Nexus.config));
                 Kernel.log("Neural Configuration Saved.");
             },
+
             exportChat() {
                 const data = JSON.stringify(Nexus.history, null, 2);
                 const blob = new Blob([data], { type: 'application/json' });
@@ -643,13 +739,22 @@
                 a.click();
                 Kernel.log("Neural Archive Exported.");
             },
+
+            newChat() {
+                if (confirm("Start a new conversation? Current chat will be lost if not exported.")) {
+                    Nexus.history = [];
+                    document.getElementById('stream').innerHTML = "";
+                    Kernel.renderAI("New conversation started. How may I assist you, Sovereign?");
+                    Memory.saveContext();
+                }
+            },
+
             toggleMap() {
                 const overlay = document.getElementById('context-map-overlay');
                 overlay.style.display = overlay.style.display === 'flex' ? 'none' : 'flex';
             }
         };
 
-        // Voice recognition with a single reusable instance
         const Voice = {
             recognition: null,
             listening: false,
@@ -768,7 +873,6 @@
             Matrix.charStack = Array(Math.ceil(Matrix.canvas.width / 20)).fill(1);
         });
 
-        // Listen for service worker update messages
         navigator.serviceWorker.addEventListener('message', event => {
             if (event.data.type === 'UPDATE_AVAILABLE') {
                 Kernel.showUpdateNotification();
@@ -777,18 +881,31 @@
 
         const originalBoot = Kernel.boot;
         Kernel.boot = async function() {
-            const savedConfig = await puter.kv.get('bt_config_v11');
+            const savedConfig = await puter.kv.get('bt_config_v12');
             if(savedConfig) Nexus.config = JSON.parse(savedConfig);
+            
+            // Apply theme
+            document.body.setAttribute('data-theme', Nexus.config.theme);
+            document.getElementById('s-theme').innerText = Nexus.config.theme.toUpperCase();
+            const metaTheme = document.querySelector('meta[name="theme-color"]');
+            if (metaTheme) {
+                metaTheme.setAttribute('content', Nexus.config.theme === 'dark' ? '#000000' : '#f5f5f7');
+            }
             
             originalBoot.apply(this);
             this.setupAccessibility();
-            Voice.init(); // Initialize voice recognition once
+            Voice.init();
             
             document.getElementById('v-temp').innerText = Nexus.config.temp;
             document.getElementById('v-rate').innerText = Nexus.config.voiceSpeed;
             document.getElementById('s-web').innerText = Nexus.config.webEnabled ? 'ON' : 'OFF';
             document.getElementById('s-vision').innerText = Nexus.config.visionEnabled ? 'ON' : 'OFF';
+            document.getElementById('s-think').innerText = Nexus.config.thinkMode ? 'ON' : 'OFF';
             document.getElementById('model-select').value = Nexus.config.model;
+            
+            // Update dock icons
+            if (Nexus.config.webEnabled) document.getElementById('web-search-icon').classList.add('active');
+            if (Nexus.config.thinkMode) document.getElementById('think-mode-icon').classList.add('active');
         };
 
         window.onload = () => {
@@ -798,4 +915,4 @@
         };
     </script>
 </body>
-</html>
+    </html>
