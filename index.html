@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>BhekThink v1012.0 | Sovereign Convergence</title>
+    
+    <!-- PWA Support -->
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <meta name="theme-color" content="#000000">
+
+    <script src="https://js.puter.com/v2/"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/tokyo-night-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+
+    <style>
+        :root {
+            --bg: #000000; --accent: #00ff88; --purple: #7000ff;
+            --text: #e8eaed; --terminal: #000803; --log-green: #00ff41;
+            --bt-glow: 0 0 25px rgba(0, 255, 136, 0.4);
+            --panel: #0d0d0d; --dim: #5f6368;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', system-ui, sans-serif; }
+        body { background: var(--bg); color: var(--text); height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
+
+        #matrix-canvas { position: fixed; inset: 0; z-index: -1; opacity: 0.12; transition: opacity 1s ease; }
+        body.thinking #matrix-canvas { opacity: 0.5; }
+
+        #induction {
+            position: fixed; inset: 0; background: #000; z-index: 10000;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 8% 10%; transition: 1.2s cubic-bezier(1,0,0,1); text-align: center;
+        }
+        .brand-reveal {
+            font-size: clamp(50px, 12vw, 100px); font-weight: 950; letter-spacing: -2px;
+            background: linear-gradient(to right, #fff, var(--accent), var(--purple));
+            background-size: 200%; -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            animation: shine 3s linear infinite; text-transform: uppercase;
+        }
+        .boot-btn { margin-top: 30px; padding: 15px 40px; background: var(--accent); color: #000; border: none; border-radius: 50px; font-weight: 900; cursor: pointer; letter-spacing: 2px; }
+
+        #menu { 
+            position: fixed; top: 0; left: -100%; width: 85vw; max-width: 380px; height: 100%; 
+            background: rgba(2, 2, 2, 0.98); z-index: 2000; transition: 0.5s cubic-bezier(1,0,0,1); 
+            padding: 30px 20px; border-right: 1px solid var(--accent); backdrop-filter: blur(25px);
+            display: flex; flex-direction: column; gap: 20px; overflow-y: auto;
+        }
+        #menu.active { left: 0; }
+        .sidebar-section { border-top: 1px solid #222; padding-top: 15px; }
+        .section-label { font-size: 10px; font-weight: 950; color: var(--accent); letter-spacing: 3px; margin-bottom: 12px; text-transform: uppercase; }
+        
+        .slider-group { margin-bottom: 15px; }
+        .slider-meta { display: flex; justify-content: space-between; font-size: 11px; color: var(--dim); margin-bottom: 5px; }
+        input[type="range"] { width: 100%; accent-color: var(--accent); cursor: pointer; }
+        select.model-select { width: 100%; background: #0a0a0a; border: 1px solid #222; color: #fff; padding: 8px; border-radius: 8px; margin-bottom: 10px; }
+
+        .grid-tools { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .tool-btn { background: #0a0a0a; border: 1px solid #222; color: #fff; padding: 12px; border-radius: 10px; font-size: 11px; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s; font-weight: 600; }
+        .tool-btn:hover { border-color: var(--accent); background: #111; }
+
+        header { padding: 20px 30px; display: flex; justify-content: space-between; align-items: center; z-index: 100; background: rgba(0,0,0,0.4); backdrop-filter: blur(10px); }
+        .live-tag { color: var(--accent); font-weight: 950; letter-spacing: 4px; display: flex; align-items: center; gap: 10px; cursor: pointer; }
+
+        #stream { flex: 1; overflow-y: auto; padding: 40px; display: flex; flex-direction: column; gap: 40px; scroll-behavior: smooth; dir: auto; }
+        .node-user { align-self: flex-end; max-width: 85%; font-size: 24px; color: #fff; border-right: 4px solid var(--accent); padding-right: 20px; text-align: right; position: relative; }
+        .node-ai { width: 100%; max-width: 950px; margin-inline: auto; animation: fadeIn 0.5s ease; position: relative; }
+        .ai-text { font-size: 19px; line-height: 1.8; color: #ced4da; }
+
+        .edit-trigger { position: absolute; left: -30px; top: 50%; transform: translateY(-50%); opacity: 0; cursor: pointer; color: var(--dim); transition: 0.2s; }
+        .node-user:hover .edit-trigger { opacity: 1; }
+
+        .regenerate-btn {
+            position: absolute; right: 0; top: 0; opacity: 0.5; cursor: pointer; color: var(--accent);
+            transition: 0.2s; font-size: 18px; z-index: 10;
+        }
+        .node-ai:hover .regenerate-btn { opacity: 1; }
+
+        .dock-container { padding: 20px; display: flex; flex-direction: column; align-items: center; background: linear-gradient(transparent, #000 70%); gap: 10px; }
+        
+        #vision-preview-container { 
+            display: none; position: relative; width: 60px; height: 60px; 
+            border: 2px solid var(--accent); border-radius: 12px; overflow: hidden; 
+            box-shadow: var(--bt-glow); animation: fadeIn 0.3s ease;
+        }
+        #vision-preview-img { width: 100%; height: 100%; object-fit: cover; }
+        .preview-close { 
+            position: absolute; top: 0; right: 0; background: rgba(0,0,0,0.7); 
+            color: #fff; font-size: 14px; cursor: pointer; padding: 2px; 
+        }
+
+        .omni-dock {
+            width: 100%; max-width: 850px; background: var(--panel); border-radius: 40px;
+            padding: 15px 30px; display: flex; align-items: center; gap: 15px; border: 1px solid #222;
+        }
+        textarea { flex: 1; background: transparent; border: none; color: #fff; font-size: 18px; outline: none; resize: none; max-height: 200px; dir: auto; }
+        .dock-action { color: var(--accent); cursor: pointer; font-size: 24px; transition: 0.2s; }
+        .dock-action:hover { transform: scale(1.1); }
+
+        .artificer-img { width: 100%; border-radius: 20px; margin-top: 15px; border: 1px solid var(--accent); }
+        pre { position: relative; padding: 15px; background: #050505 !important; border-radius: 12px; margin: 15px 0; overflow-x: auto; }
+        .copy-btn { position: absolute; right: 10px; top: 10px; color: var(--accent); cursor: pointer; opacity: 0.5; }
+
+        /* Neural Context Map */
+        #context-map-overlay {
+            position: fixed; top: 80px; right: 20px; width: 280px; max-height: 60vh;
+            background: rgba(10, 10, 10, 0.95); border: 1px solid var(--accent);
+            border-radius: 15px; z-index: 1500; display: none; flex-direction: column;
+            backdrop-filter: blur(15px); box-shadow: var(--bt-glow); padding: 15px;
+        }
+        .map-header { font-size: 10px; font-weight: 900; color: var(--accent); letter-spacing: 2px; margin-bottom: 10px; display: flex; justify-content: space-between; }
+        #map-list { overflow-y: auto; font-size: 12px; color: #bbb; }
+        .map-item { padding: 8px; border-bottom: 1px solid #222; cursor: pointer; transition: 0.2s; }
+        .map-item:hover { background: rgba(0, 255, 136, 0.1); color: #fff; }
+        .map-trigger-btn { 
+            position: fixed; top: 100px; right: 20px; background: var(--panel); 
+            border: 1px solid var(--accent); color: var(--accent); padding: 10px; 
+            border-radius: 50%; cursor: pointer; z-index: 1400; display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes shine { to { background-position: 200%; } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="bhekthink-absolute">
+
+    <canvas id="matrix-canvas"></canvas>
+
+    <div id="induction">
+        <div class="brand-reveal">BhekThink</div>
+        <div class="sub-reveal" style="color: var(--accent); letter-spacing: 5px; font-weight: 900; margin-top: 10px;">SOVEREIGN SINGULARITY</div>
+        <button class="boot-btn" onclick="Kernel.boot()">INITIALIZE KERNEL</button>
+    </div>
+
+    <div id="menu">
+        <div style="font-weight:900; color:var(--accent); letter-spacing:5px; font-size: 12px; margin-bottom: 20px;">SYSTEM CONTROL</div>
+        
+        <div class="sidebar-section">
+            <div class="section-label">Neural Tuning</div>
+            <div class="slider-group">
+                <div class="slider-meta"><span>Temperature (Creativity)</span><span id="v-temp">0.7</span></div>
+                <input type="range" min="0" max="1" step="0.1" value="0.7" oninput="UI.setParam('temp', this.value)">
+            </div>
+            <div class="slider-group">
+                <div class="slider-meta"><span>Voice Velocity</span><span id="v-rate">1.1</span></div>
+                <input type="range" min="0.5" max="2" step="0.1" value="1.1" oninput="UI.setParam('voiceSpeed', this.value)">
+            </div>
+        </div>
+
+        <div class="sidebar-section">
+            <div class="section-label">Model Selection</div>
+            <select id="model-select" class="model-select" onchange="UI.setModel(this.value)">
+                <option value="gpt-4o" selected>GPT-4o (Vision)</option>
+                <option value="gpt-4">GPT-4</option>
+                <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                <option value="claude-3-opus">Claude 3 Opus</option>
+                <option value="claude-3-sonnet">Claude 3 Sonnet</option>
+            </select>
+        </div>
+
+        <div class="sidebar-section">
+            <div class="section-label">Language Mesh</div>
+            <div class="grid-tools">
+                <button class="tool-btn" onclick="UI.setLang('English')">🇬🇧 EN</button>
+                <button class="tool-btn" onclick="UI.setLang('Twi')">🇬🇭 TWI</button>
+                <button class="tool-btn" onclick="UI.setLang('French')">🇫🇷 FR</button>
+                <button class="tool-btn" onclick="UI.setLang('Spanish')">🇪🇸 ES</button>
+                <button class="tool-btn" onclick="UI.setLang('Arabic')">🇦🇪 AR</button>
+                <button class="tool-btn" onclick="UI.setLang('Chinese')">🇨🇳 ZH</button>
+            </div>
+        </div>
+
+        <div class="sidebar-section">
+            <div class="section-label">Engine Toggles</div>
+            <div class="grid-tools">
+                <button class="tool-btn" onclick="UI.toggle('webEnabled')"><span class="material-symbols-rounded">public</span> WEB: <span id="s-web">ON</span></button>
+                <button class="tool-btn" onclick="UI.toggle('visionEnabled')"><span class="material-symbols-rounded">visibility</span> VISION: <span id="s-vision">ON</span></button>
+            </div>
+        </div>
+
+        <div class="sidebar-section" style="flex:1">
+            <div class="section-label">Neural Logs</div>
+            <div id="terminal" style="height:150px; background:#000; padding:10px; font-family:monospace; font-size:10px; color:var(--log-green); overflow-y:auto;"></div>
+        </div>
+    </div>
+
+    <header>
+        <div class="live-tag" onclick="UI.toggleMenu()">
+            <span class="material-symbols-rounded" aria-hidden="true">hub</span> BHEKTHINK v1012.0
+        </div>
+        <canvas id="visualizer" width="140" height="30" aria-label="Audio Visualizer"></canvas>
+        <div style="display: flex; gap: 10px;">
+            <button class="tool-btn" onclick="UI.exportChat()" style="padding: 5px 10px;" aria-label="Export Conversation">
+                <span class="material-symbols-rounded" style="font-size:18px">download</span>
+            </button>
+            <div id="auth-status" class="auth-btn" onclick="Auth.toggle()">SIGN IN</div>
+        </div>
+    </header>
+
+    <main id="stream"></main>
+
+    <!-- Neural Context Map Elements -->
+    <div id="context-map-overlay">
+        <div class="map-header">NEURAL CONTEXT MAP <span onclick="UI.toggleMap()" style="cursor:pointer">CLOSE</span></div>
+        <div id="map-list"></div>
+    </div>
+    <button id="map-trigger" class="map-trigger-btn" onclick="UI.toggleMap()" aria-label="View Data Map">
+        <span class="material-symbols-rounded">account_tree</span>
+    </button>
+
+    <div class="dock-container">
+        <div id="vision-preview-container">
+            <img id="vision-preview-img" src="" alt="Vision Staged">
+            <span class="material-symbols-rounded preview-close" onclick="Kernel.clearStagedImage()">close</span>
+        </div>
+
+        <div class="omni-dock">
+            <input type="file" id="file-in" hidden onchange="Kernel.handleFiles(this.files)" multiple>
+            <span class="material-symbols-rounded dock-action" onclick="document.getElementById('file-in').click()">add_circle</span>
+            <textarea id="omni-input" placeholder="Address Sovereign Singularity..." rows="1"></textarea>
+            <span class="material-symbols-rounded dock-action" onclick="Voice.stop()">volume_off</span>
+            <span class="material-symbols-rounded dock-action" id="mic-btn" onclick="Voice.listen()">mic</span>
+            <span class="material-symbols-rounded dock-action" style="color:var(--accent)" onclick="Kernel.run()">bolt</span>
+        </div>
+    </div>
+
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+        const Nexus = {
+            history: [],
+            config: {
+                temp: 0.7,
+                voiceSpeed: 1.1,
+                webEnabled: true,
+                visionEnabled: true,
+                lang: 'English',
+                model: 'gpt-4o'
+            }
+        };
+
+        const Kernel = {
+            busy: false,
+            pendingImage: null,
+
+            boot() {
+                document.getElementById('induction').style.opacity = '0';
+                setTimeout(() => {
+                    document.getElementById('induction').remove();
+                    Matrix.init(); Visualizer.init();
+                    this.setupInteractions();
+                    Memory.recallContext();
+                    
+                    // Register Service Worker after boot
+                    if ('serviceWorker' in navigator) {
+                        navigator.serviceWorker.register('./sw.js')
+                            .then(() => this.log("Sovereign Service Worker: ACTIVE"))
+                            .catch(err => this.log(`SW Error: ${err}`));
+                    }
+                }, 1200);
+            },
+
+            log(msg) {
+                const term = document.getElementById('terminal');
+                term.innerHTML += `<div>> [${new Date().toLocaleTimeString()}] ${msg}</div>`;
+                term.scrollTop = term.scrollHeight;
+            },
+
+            setupInteractions() {
+                window.ondragover = (e) => e.preventDefault();
+                window.ondrop = (e) => { e.preventDefault(); this.handleFiles(e.dataTransfer.files); };
+                window.onpaste = (e) => {
+                    const items = e.clipboardData.items;
+                    for (let item of items) if (item.kind === 'file') this.handleFiles([item.getAsFile()]);
+                };
+            },
+
+            async handleFiles(files) {
+                for (let file of files) {
+                    this.log(`Ingesting: ${file.name}`);
+                    if (file.type === "application/pdf") {
+                        const reader = new FileReader();
+                        reader.onload = async () => {
+                            const pdf = await pdfjsLib.getDocument(new Uint8Array(reader.result)).promise;
+                            let text = "";
+                            for (let i=1; i<=pdf.numPages; i++) {
+                                const page = await pdf.getPage(i);
+                                const content = await page.getTextContent();
+                                text += content.items.map(s => s.str).join(" ") + "\n";
+                            }
+                            Nexus.history.push({ role: 'user', content: `[DATA ATTACHED: ${file.name}]\n${text}` });
+                            this.renderAI(`PDF **${file.name}** has been character-mapped and integrated.`);
+
+                            // Generate context map for large documents
+                            if (text.length > 3000) {
+                                this.generateContextMap(file.name, text);
+                            }
+                        };
+                        reader.readAsArrayBuffer(file);
+                    } else if (file.type.startsWith('image/')) {
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            this.pendingImage = e.target.result;
+                            this.showStagedImage(e.target.result);
+                            this.log(`Image staged: ${file.name}`);
+                        };
+                        reader.readAsDataURL(file);
+                    } else {
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            Nexus.history.push({ role: 'user', content: `[TEXT FILE: ${file.name}]\n${e.target.result}` });
+                            this.renderAI(`Text file **${file.name}** ingested.`);
+                        };
+                        reader.readAsText(file);
+                    }
+                }
+            },
+
+            // Neural Context Map Generator
+            generateContextMap(fileName, text) {
+                const trigger = document.getElementById('map-trigger');
+                const list = document.getElementById('map-list');
+                
+                // Break long text into "Neural Clusters" (chunks of ~2000 chars)
+                const chunks = text.match(/.{1,2000}/g) || [];
+                
+                list.innerHTML = `<div style="color:var(--accent); margin-bottom:8px;">Source: ${fileName}</div>`;
+                chunks.forEach((chunk, i) => {
+                    const item = document.createElement('div');
+                    item.className = 'map-item';
+                    // Extract first 40 chars as a "heading"
+                    const heading = chunk.substring(0, 40).replace(/\n/g, ' ') + "...";
+                    item.innerHTML = `<strong>Cluster ${i+1}:</strong> ${heading}`;
+                    item.onclick = () => {
+                        document.getElementById('omni-input').value = `Regarding Cluster ${i+1} of ${fileName}: "${heading}" - Please summarize this section.`;
+                        UI.toggleMap();
+                    };
+                    list.appendChild(item);
+                });
+
+                trigger.style.display = 'block';
+                this.log(`Context Map Generated: ${chunks.length} clusters.`);
+            },
+
+            showStagedImage(src) {
+                const container = document.getElementById('vision-preview-container');
+                const img = document.getElementById('vision-preview-img');
+                img.src = src;
+                container.style.display = 'block';
+            },
+
+            clearStagedImage() {
+                this.pendingImage = null;
+                document.getElementById('vision-preview-container').style.display = 'none';
+            },
+
+            async run(forkIndex = null, forkContent = null, regenerateIndex = null) {
+                if (this.busy) return;
+                const input = document.getElementById('omni-input');
+                let val = forkContent || input.value.trim();
+                
+                // Handle regenerate: use the last user message
+                if (regenerateIndex !== null) {
+                    // Find the last user message before this AI node
+                    for (let i = regenerateIndex - 1; i >= 0; i--) {
+                        if (Nexus.history[i].role === 'user') {
+                            val = typeof Nexus.history[i].content === 'string' ? Nexus.history[i].content : "Regenerate with multimodal";
+                            // Remove this AI message and all after it
+                            Nexus.history = Nexus.history.slice(0, regenerateIndex);
+                            document.getElementById('stream').innerHTML = "";
+                            this.rebuildUI();
+                            break;
+                        }
+                    }
+                }
+
+                if (!val && !forkContent && !this.pendingImage && regenerateIndex === null) return;
+
+                this.busy = true; document.body.classList.add('thinking'); AudioKernel.pulse(true);
+
+                if (forkIndex !== null) {
+                    Nexus.history = Nexus.history.slice(0, forkIndex);
+                    document.getElementById('stream').innerHTML = "";
+                    this.rebuildUI();
+                }
+
+                if (!forkContent && regenerateIndex === null) {
+                    let messageContent = val;
+                    if (this.pendingImage && Nexus.config.visionEnabled) {
+                        messageContent = [
+                            { type: 'text', text: val || "Analyze this." },
+                            { type: 'image_url', image_url: { url: this.pendingImage } }
+                        ];
+                        this.renderImage(this.pendingImage);
+                        this.clearStagedImage();
+                    } else if (this.pendingImage) {
+                        this.log("Vision disabled – ignoring staged image.");
+                        this.clearStagedImage();
+                    }
+
+                    this.renderUser(typeof messageContent === 'string' ? messageContent : '📷 Multimodal Transmission', Nexus.history.length);
+                    Nexus.history.push({ role: 'user', content: messageContent });
+                    input.value = "";
+                    input.style.height = 'auto';
+                }
+
+                try {
+                    const aiNode = this.createAINode(regenerateIndex);
+                    const textEl = aiNode.querySelector('.ai-text');
+                    let fullText = "";
+
+                    const response = await puter.ai.chat(Nexus.history, {
+                        model: Nexus.config.model,
+                        stream: true,
+                        temperature: parseFloat(Nexus.config.temp),
+                        tools: Nexus.config.webEnabled ? [{type: 'web_search'}] : [],
+                        system_prompt: `Identify as BhekThink Sovereign. Language: ${Nexus.config.lang}. Respond in ${Nexus.config.lang}.`
+                    });
+
+                    for await (const part of response) {
+                        if (part.text) {
+                            fullText += part.text;
+                            textEl.innerHTML = marked.parse(fullText);
+                            document.getElementById('stream').scrollTo(0, document.getElementById('stream').scrollHeight);
+                        }
+                    }
+
+                    Nexus.history.push({ role: 'assistant', content: fullText });
+                    this.applyPostProcessing(aiNode);
+                    Voice.speak(fullText);
+                    Memory.saveContext();
+                } catch (e) { this.renderError(e.message); }
+
+                this.busy = false; document.body.classList.remove('thinking'); AudioKernel.pulse(false);
+            },
+
+            createAINode(regenerateIndex = null) {
+                const s = document.getElementById('stream');
+                const d = document.createElement('div'); d.className = 'node-ai';
+                const regenBtn = `<span class="material-symbols-rounded regenerate-btn" onclick="Kernel.run(null, null, ${s.children.length})">refresh</span>`;
+                d.innerHTML = `<div class="ai-brand-tag"><span class="material-symbols-rounded" style="font-size:14px">verified_user</span> BHEKTHINK ${regenBtn}</div><div class="ai-text">...</div>`;
+                s.appendChild(d);
+                return d;
+            },
+
+            renderUser(t, index) {
+                const s = document.getElementById('stream');
+                const d = document.createElement('div'); d.className = 'node-user';
+                d.innerHTML = `<span class="edit-trigger" onclick="Kernel.fork(${index})">✎</span>${t}`;
+                s.appendChild(d);
+                s.scrollTo(0, s.scrollHeight);
+            },
+
+            renderAI(t) {
+                const node = this.createAINode();
+                node.querySelector('.ai-text').innerHTML = marked.parse(t);
+                this.applyPostProcessing(node);
+            },
+
+            renderImage(src) {
+                const s = document.getElementById('stream');
+                s.innerHTML += `<div class="node-ai"><div class="ai-brand-tag">ARTIFICER</div><img src="${src}" class="artificer-img"></div>`;
+                s.scrollTo(0, s.scrollHeight);
+            },
+
+            renderError(m) {
+                this.log(`Critical Fault: ${m}`);
+                const s = document.getElementById('stream');
+                s.innerHTML += `<div class="node-ai" style="border-left:2px solid red;"><div class="ai-text" style="color:#ff8888">SYSTEM FAULT: ${m}</div></div>`;
+            },
+
+            applyPostProcessing(node) {
+                node.querySelectorAll('pre code').forEach(c => hljs.highlightElement(c));
+                node.querySelectorAll('pre').forEach(pre => {
+                    const btn = document.createElement('span');
+                    btn.className = 'material-symbols-rounded copy-btn';
+                    btn.innerText = 'content_copy';
+                    btn.onclick = () => { navigator.clipboard.writeText(pre.innerText); this.log("Code Copied."); };
+                    pre.appendChild(btn);
+                });
+            },
+
+            rebuildUI() {
+                Nexus.history.forEach((m, i) => {
+                    if (m.role === 'user') this.renderUser(typeof m.content === 'string' ? m.content : 'Multimodal Node', i);
+                    else this.renderAI(m.content);
+                });
+            },
+
+            fork(index) {
+                const newPrompt = prompt("Fork Timeline - Enter new prompt:", typeof Nexus.history[index].content === 'string' ? Nexus.history[index].content : "");
+                if (newPrompt) this.run(index, newPrompt);
+            },
+
+            clear() { puter.kv.del('bt_state_v8'); location.reload(); }
+        };
+
+        const Memory = {
+            async saveContext() { await puter.kv.set('bt_state_v8', JSON.stringify(Nexus.history)); },
+            async recallContext() {
+                const s = await puter.kv.get('bt_state_v8');
+                if (s) { Nexus.history = JSON.parse(s); Kernel.rebuildUI(); }
+            }
+        };
+
+        const UI = {
+            toggleMenu() { document.getElementById('menu').classList.toggle('active'); },
+            setParam(key, val) { 
+                Nexus.config[key] = val; 
+                document.getElementById(`v-${key === 'voiceSpeed' ? 'rate' : 'temp'}`).innerText = val; 
+                this.saveSettings();
+            },
+            toggle(key) {
+                Nexus.config[key] = !Nexus.config[key];
+                document.getElementById(`s-${key === 'webEnabled' ? 'web' : 'vision'}`).innerText = Nexus.config[key] ? 'ON' : 'OFF';
+                this.saveSettings();
+            },
+            setLang(l) {
+                Nexus.config.lang = l;
+                Kernel.log(`Language Mesh: ${l}`);
+                this.saveSettings();
+            },
+            setModel(m) {
+                Nexus.config.model = m;
+                Kernel.log(`Model switched to ${m}`);
+                this.saveSettings();
+            },
+            async saveSettings() {
+                await puter.kv.set('bt_config_v11', JSON.stringify(Nexus.config));
+                Kernel.log("Neural Configuration Saved.");
+            },
+            exportChat() {
+                const data = JSON.stringify(Nexus.history, null, 2);
+                const blob = new Blob([data], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `bhekthink-session-${Date.now()}.json`;
+                a.click();
+                Kernel.log("Neural Archive Exported.");
+            },
+            toggleMap() {
+                const overlay = document.getElementById('context-map-overlay');
+                overlay.style.display = overlay.style.display === 'flex' ? 'none' : 'flex';
+            }
+        };
+
+        // Voice recognition with a single reusable instance
+        const Voice = {
+            recognition: null,
+            listening: false,
+            init() {
+                if (!('SpeechRecognition' in window || 'webkitSpeechRecognition' in window)) return;
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                this.recognition = new SpeechRecognition();
+                this.recognition.continuous = false;
+                this.recognition.interimResults = false;
+                this.recognition.onstart = () => {
+                    this.listening = true;
+                    document.getElementById('mic-btn').style.color = 'red';
+                    Kernel.log("Voice recognition active...");
+                };
+                this.recognition.onresult = (e) => {
+                    document.getElementById('omni-input').value = e.results[0][0].transcript;
+                    Kernel.run();
+                };
+                this.recognition.onend = () => {
+                    this.listening = false;
+                    document.getElementById('mic-btn').style.color = 'var(--accent)';
+                };
+                this.recognition.onerror = (e) => {
+                    Kernel.log(`Voice error: ${e.error}`);
+                    this.listening = false;
+                    document.getElementById('mic-btn').style.color = 'var(--accent)';
+                };
+            },
+            listen() {
+                if (!this.recognition) this.init();
+                if (this.listening) return;
+                try { this.recognition.start(); } catch (e) { Kernel.log("Voice start failed."); }
+            },
+            stop() {
+                window.speechSynthesis.cancel();
+                Visualizer.active = false;
+            },
+            speak(t) {
+                window.speechSynthesis.cancel(); Visualizer.active = true;
+                const u = new SpeechSynthesisUtterance(t.replace(/[#*`_>]/g, ''));
+                u.rate = Nexus.config.voiceSpeed;
+                u.onend = () => Visualizer.active = false;
+                window.speechSynthesis.speak(u);
+            }
+        };
+
+        const Matrix = {
+            canvas: document.getElementById('matrix-canvas'), ctx: null, charStack: [],
+            init() {
+                this.ctx = this.canvas.getContext('2d');
+                this.canvas.width = window.innerWidth; this.canvas.height = window.innerHeight;
+                this.charStack = Array(Math.ceil(this.canvas.width / 20)).fill(1);
+                setInterval(() => this.draw(), 50);
+            },
+            draw() {
+                this.ctx.fillStyle = "rgba(0,0,0,0.05)"; this.ctx.fillRect(0,0,this.canvas.width,this.canvas.height);
+                this.ctx.fillStyle = "#0f8"; this.ctx.font = "15px monospace";
+                this.charStack.forEach((y, i) => {
+                    this.ctx.fillText(String.fromCharCode(0x30A0 + Math.random() * 33), i * 20, y * 20);
+                    if (y * 20 > this.canvas.height && Math.random() > 0.975) this.charStack[i] = 0;
+                    this.charStack[i]++;
+                });
+            }
+        };
+
+        const AudioKernel = {
+            ctx: null, osc: null, gain: null,
+            init() {
+                this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                this.osc = this.ctx.createOscillator(); this.gain = this.ctx.createGain();
+                this.osc.type = 'sine'; this.osc.frequency.setValueAtTime(42, this.ctx.currentTime);
+                this.gain.gain.setValueAtTime(0, this.ctx.currentTime);
+                this.osc.connect(this.gain); this.gain.connect(this.ctx.destination);
+                this.osc.start();
+            },
+            pulse(on) { if(!this.ctx) this.init(); this.gain.gain.setTargetAtTime(on ? 0.05 : 0, this.ctx.currentTime, 0.4); }
+        };
+
+        const Visualizer = {
+            canvas: document.getElementById('visualizer'), ctx: null, active: false,
+            init() { this.ctx = this.canvas.getContext('2d'); this.draw(); },
+            draw() {
+                requestAnimationFrame(() => this.draw());
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                this.ctx.beginPath(); this.ctx.strokeStyle = "#00ff88"; this.ctx.lineWidth = 2;
+                for (let i = 0; i < this.canvas.width; i++) {
+                    const amp = this.active ? Math.random() * 15 : 2;
+                    const y = (this.canvas.height/2) + Math.sin(i * 0.1 + Date.now() * 0.01) * amp;
+                    i === 0 ? this.ctx.moveTo(i, y) : this.ctx.lineTo(i, y);
+                }
+                this.ctx.stroke();
+            }
+        };
+
+        const Auth = {
+            async toggle() {
+                const user = await puter.auth.signIn();
+                document.getElementById('auth-status').innerText = user.username.toUpperCase();
+                Memory.recallContext();
+            }
+        };
+
+        Kernel.setupAccessibility = function() {
+            document.querySelectorAll('.dock-action').forEach(btn => {
+                const label = btn.innerText.replace('_', ' ');
+                btn.setAttribute('role', 'button');
+                btn.setAttribute('aria-label', label);
+                btn.setAttribute('tabindex', '0');
+                btn.onkeydown = (e) => { if(e.key === 'Enter') btn.click(); };
+            });
+        };
+
+        window.addEventListener('resize', () => {
+            Matrix.canvas.width = window.innerWidth;
+            Matrix.canvas.height = window.innerHeight;
+            Matrix.charStack = Array(Math.ceil(Matrix.canvas.width / 20)).fill(1);
+        });
+
+        const originalBoot = Kernel.boot;
+        Kernel.boot = async function() {
+            const savedConfig = await puter.kv.get('bt_config_v11');
+            if(savedConfig) Nexus.config = JSON.parse(savedConfig);
+            
+            originalBoot.apply(this);
+            this.setupAccessibility();
+            Voice.init(); // Initialize voice recognition once
+            
+            document.getElementById('v-temp').innerText = Nexus.config.temp;
+            document.getElementById('v-rate').innerText = Nexus.config.voiceSpeed;
+            document.getElementById('s-web').innerText = Nexus.config.webEnabled ? 'ON' : 'OFF';
+            document.getElementById('s-vision').innerText = Nexus.config.visionEnabled ? 'ON' : 'OFF';
+            document.getElementById('model-select').value = Nexus.config.model;
+        };
+
+        window.onload = () => {
+            const tx = document.getElementById('omni-input');
+            tx.addEventListener('input', () => { tx.style.height = 'auto'; tx.style.height = tx.scrollHeight + 'px'; });
+            tx.addEventListener('keydown', (e) => { if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); Kernel.run(); } });
+        };
+    </script>
+</body>
+</html>
