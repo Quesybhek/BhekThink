@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>BhekThink v1018.0 | Sovereign Convergence</title>
+    <title>BhekThink v1024.0 | Sovereign Convergence</title>
     
     <!-- PWA Support -->
     <link rel="manifest" href="manifest.json">
@@ -32,6 +32,7 @@
         :root[data-theme="light"] {
             --bg: #f5f5f7;
             --accent: #0066cc;
+            --accent-rgb: 0, 102, 204;
             --purple: #8a2be2;
             --text: #1d1d1f;
             --terminal: #e8e8ed;
@@ -39,12 +40,16 @@
             --bt-glow: 0 0 25px rgba(0, 102, 204, 0.3);
             --panel: #ffffff;
             --dim: #6e6e73;
+            --director: #aa00ff;
+            --architect: #00aaff;
+            --forge: #ffaa00;
         }
 
         /* Dark theme (default) */
         :root {
             --bg: #000000;
             --accent: #00ff88;
+            --accent-rgb: 0, 255, 136;
             --purple: #7000ff;
             --text: #e8eaed;
             --terminal: #000803;
@@ -52,6 +57,9 @@
             --bt-glow: 0 0 25px rgba(0, 255, 136, 0.4);
             --panel: #0d0d0d;
             --dim: #5f6368;
+            --director: #bb88ff;
+            --architect: #88ccff;
+            --forge: #ffcc88;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', system-ui, sans-serif; }
@@ -84,6 +92,24 @@
         }
         .update-text { color: var(--accent); font-weight: 600; font-size: 14px; }
         .update-btn { background: var(--accent); color: #000; border: none; border-radius: 30px; padding: 6px 16px; font-weight: 900; cursor: pointer; font-size: 12px; }
+
+        /* Hive View Indicator */
+        #hive-indicator {
+            position: fixed; top: 10px; left: 50%; transform: translateX(-50%);
+            background: var(--panel); border: 1px solid var(--accent);
+            border-radius: 40px; padding: 8px 20px; display: none;
+            align-items: center; gap: 12px; z-index: 1000;
+            box-shadow: var(--bt-glow); backdrop-filter: blur(10px);
+            font-size: 12px; font-weight: 600;
+        }
+        .agent-pulse {
+            width: 12px; height: 12px; border-radius: 50%;
+            animation: pulse 1.5s infinite;
+        }
+        .agent-pulse.director { background: var(--director); box-shadow: 0 0 10px var(--director); }
+        .agent-pulse.architect { background: var(--architect); box-shadow: 0 0 10px var(--architect); }
+        .agent-pulse.forge { background: var(--forge); box-shadow: 0 0 10px var(--forge); }
+        .agent-pulse.idle { background: var(--dim); }
 
         #menu { 
             position: fixed; top: 0; left: -100%; width: 85vw; max-width: 380px; height: 100%; 
@@ -170,6 +196,7 @@
         #map-list { overflow-y: auto; font-size: 12px; color: var(--text); }
         .map-item { padding: 8px; border-bottom: 1px solid var(--dim); cursor: pointer; transition: 0.2s; }
         .map-item:hover { background: var(--bg); color: var(--accent); }
+        .map-item.active { background: var(--accent); color: #000; border-left: 4px solid var(--purple); }
         .map-trigger-btn { 
             position: fixed; top: 100px; right: 20px; background: var(--panel); 
             border: 1px solid var(--accent); color: var(--accent); padding: 10px; 
@@ -180,6 +207,22 @@
         @keyframes shine { to { background-position: 200%; } }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes slideUp { from { transform: translate(-50%, 100%); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }
+        
+        /* Refined pulse animation for Hive View */
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(var(--accent-rgb), 0.4);
+                transform: scale(0.95);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(var(--accent-rgb), 0);
+                transform: scale(1.05);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(var(--accent-rgb), 0);
+                transform: scale(0.95);
+            }
+        }
     </style>
 </head>
 <body class="bhekthink-absolute" data-theme="dark">
@@ -197,6 +240,13 @@
         <span class="material-symbols-rounded" style="color: var(--accent);">system_update</span>
         <span class="update-text">New version available</span>
         <button class="update-btn" onclick="Kernel.applyUpdate()">UPDATE</button>
+    </div>
+
+    <!-- Hive View Indicator -->
+    <div id="hive-indicator">
+        <span>Agent Hive</span>
+        <div class="agent-pulse idle" id="agent-pulse"></div>
+        <span id="agent-name">Idle</span>
     </div>
 
     <div id="menu">
@@ -220,11 +270,15 @@
         <div class="sidebar-section">
             <div class="section-label">Model Selection</div>
             <select id="model-select" class="model-select" onchange="UI.setModel(this.value)">
-                <option value="gpt-4o" selected>GPT-4o (Vision)</option>
-                <option value="gpt-4">GPT-4</option>
-                <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
-                <option value="claude-3-opus">Claude 3 Opus</option>
-                <option value="claude-3-sonnet">Claude 3 Sonnet</option>
+                <optgroup label="2026 Frontier Models">
+                    <option value="gpt-6-preview">GPT-6 (Early Access Preview)</option>
+                    <option value="gpt-5.2-pro">GPT-5.2 Pro (Deep Reasoning)</option>
+                    <option value="gpt-5.2-instant">GPT-5.2 Instant (Turbo)</option>
+                </optgroup>
+                <optgroup label="Legacy & Standard">
+                    <option value="gpt-5">GPT-5 (Standard)</option>
+                    <option value="gpt-4o">GPT-4o (Vision)</option>
+                </optgroup>
             </select>
         </div>
 
@@ -246,7 +300,16 @@
                 <button class="tool-btn" onclick="UI.toggle('webEnabled')"><span class="material-symbols-rounded">public</span> WEB: <span id="s-web">ON</span></button>
                 <button class="tool-btn" onclick="UI.toggle('visionEnabled')"><span class="material-symbols-rounded">visibility</span> VISION: <span id="s-vision">ON</span></button>
                 <button class="tool-btn" onclick="UI.toggle('thinkMode')"><span class="material-symbols-rounded">psychology</span> THINK: <span id="s-think">OFF</span></button>
+                <button class="tool-btn" onclick="UI.toggle('collabMode')"><span class="material-symbols-rounded">groups</span> HIVE: <span id="s-collab">OFF</span></button>
                 <button class="tool-btn" onclick="UI.toggleTheme()"><span class="material-symbols-rounded">dark_mode</span> THEME: <span id="s-theme">DARK</span></button>
+            </div>
+        </div>
+
+        <!-- Neural Archives Section -->
+        <div class="sidebar-section">
+            <div class="section-label">Neural Archives (Cloud)</div>
+            <div id="archive-list" style="max-height: 300px; overflow-y: auto; display: flex; flex-direction: column; gap: 5px;">
+                <!-- Archive entries will be populated here -->
             </div>
         </div>
 
@@ -259,7 +322,7 @@
     <header>
         <div style="display: flex; align-items: center; gap: 15px;">
             <span class="material-symbols-rounded dock-action" onclick="UI.toggleMenu()" style="font-size: 28px;" aria-label="Menu">menu</span>
-            <div class="live-tag">BHEKTHINK v1018.0</div>
+            <div class="live-tag">BHEKTHINK v1024.0</div>
         </div>
         <canvas id="visualizer" width="140" height="30" aria-label="Audio Visualizer"></canvas>
         <div style="display: flex; gap: 10px;">
@@ -296,6 +359,7 @@
             <span class="material-symbols-rounded dock-action" onclick="Kernel.imageMode()" style="color:var(--accent)">palette</span>
             <span class="material-symbols-rounded dock-action" onclick="UI.toggleWebSearch()" id="web-search-icon" style="color:var(--accent)">public</span>
             <span class="material-symbols-rounded dock-action" onclick="UI.toggleThinkMode()" id="think-mode-icon" style="color:var(--accent)">psychology</span>
+            <span class="material-symbols-rounded dock-action" onclick="UI.toggleCollabMode()" id="collab-mode-icon" style="color:var(--accent)">groups</span>
             <textarea id="omni-input" placeholder="Address Sovereign Singularity..." rows="1"></textarea>
             <span class="material-symbols-rounded dock-action" onclick="Voice.stop()">volume_off</span>
             <span class="material-symbols-rounded dock-action" id="mic-btn" onclick="Voice.listen()">mic</span>
@@ -308,15 +372,139 @@
 
         const Nexus = {
             history: [],
+            currentChatId: null,
             config: {
                 temp: 0.7,
                 voiceSpeed: 1.1,
                 webEnabled: true,
                 visionEnabled: true,
                 thinkMode: false,
+                collabMode: false,
                 lang: 'English',
                 model: 'gpt-4o',
-                theme: 'dark' // 'dark' or 'light'
+                theme: 'dark'
+            }
+        };
+
+        // Agent Registry for Multi-Agent Collaboration
+        const AgentRegistry = {
+            DIRECTOR: { 
+                role: "Sovereign Director", 
+                model: "gpt-6-preview", 
+                reasoning: "high",
+                color: "director"
+            },
+            ARCHITECT: { 
+                role: "System Architect", 
+                model: "gpt-5.2-pro", 
+                reasoning: "high",
+                instructions: "Focus on structural integrity, security, and scalability.",
+                color: "architect"
+            },
+            FORGE: { 
+                role: "Code Forge", 
+                model: "gpt-5.2-instant", 
+                reasoning: "low",
+                instructions: "Write clean, performant, and modern code. No yapping.",
+                color: "forge"
+            }
+        };
+
+        // Archives System
+        const Archives = {
+            async init() {
+                try {
+                    await puter.fs.mkdir('~/.bhekthink/archives', { recursive: true });
+                    this.refreshSidebar();
+                } catch (e) { console.warn("Archive directory already exists."); }
+            },
+
+            async save() {
+                if (Nexus.history.length < 2) return;
+
+                const firstMsg = Nexus.history.find(m => m.role === 'user');
+                const title = typeof firstMsg?.content === 'string' ? 
+                              firstMsg.content.slice(0, 30) : "Multimodal Session";
+                
+                if (!Nexus.currentChatId) {
+                    Nexus.currentChatId = `chat_${Date.now()}`;
+                }
+
+                const filename = `~/.bhekthink/archives/${Nexus.currentChatId}.json`;
+                const bundle = {
+                    id: Nexus.currentChatId,
+                    title: title,
+                    lastUpdated: new Date().toISOString(),
+                    history: Nexus.history,
+                    config: Nexus.config
+                };
+
+                await puter.fs.write(filename, JSON.stringify(bundle));
+                this.refreshSidebar();
+            },
+
+            async refreshSidebar() {
+                const list = document.getElementById('archive-list');
+                if (!list) return;
+                
+                try {
+                    const files = await puter.fs.readdir('~/.bhekthink/archives');
+                    list.innerHTML = '';
+
+                    files.sort((a, b) => b.modified - a.modified);
+
+                    files.forEach(file => {
+                        const item = document.createElement('div');
+                        item.className = 'map-item';
+                        if (file.path.includes(Nexus.currentChatId)) {
+                            item.classList.add('active');
+                        }
+                        const displayName = file.name.replace('.json', '').split('_').slice(1).join(' ') || file.name;
+                        
+                        item.innerHTML = `
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <span><span class="material-symbols-rounded" style="font-size:14px; vertical-align:middle; margin-right:5px;">forum</span> ${displayName}</span>
+                                <span class="material-symbols-rounded" style="font-size:14px; color:red; cursor:pointer;" onclick="Archives.delete('${file.path}', event)">delete</span>
+                            </div>
+                        `;
+                        
+                        item.onclick = () => this.load(file.path);
+                        list.appendChild(item);
+                    });
+                } catch (e) {
+                    console.warn("Could not load archives", e);
+                }
+            },
+
+            async load(path) {
+                Kernel.log(`💠 Restoring Timeline: ${path}`);
+                const loadingMsg = document.createElement('div');
+                loadingMsg.className = 'node-ai';
+                loadingMsg.innerHTML = `<div class="ai-text">Loading neural state...</div>`;
+                document.getElementById('stream').appendChild(loadingMsg);
+                
+                const data = await puter.fs.read(path);
+                const bundle = JSON.parse(data);
+
+                Nexus.history = bundle.history;
+                Nexus.currentChatId = bundle.id;
+                Nexus.config = bundle.config || Nexus.config;
+
+                document.getElementById('stream').innerHTML = "";
+                Kernel.rebuildUI();
+                UI.toggleMenu();
+                
+                Kernel.renderAI(`*Timeline Restored. Standing by for further instructions, Sovereign.*`);
+                UI.updateUIFromConfig();
+                this.refreshSidebar();
+            },
+
+            async delete(path, e) {
+                e.stopPropagation();
+                if(confirm("Erase this timeline from the archives?")) {
+                    await puter.fs.delete(path);
+                    this.refreshSidebar();
+                }
             }
         };
 
@@ -325,13 +513,14 @@
             pendingImage: null,
             updateRegistration: null,
 
-            boot() {
+            async boot() {
                 document.getElementById('induction').style.opacity = '0';
                 setTimeout(() => {
                     document.getElementById('induction').remove();
                     Matrix.init(); Visualizer.init();
                     this.setupInteractions();
                     Memory.recallContext();
+                    Archives.init();
                     
                     if ('serviceWorker' in navigator) {
                         navigator.serviceWorker.register('/BhekThink/sw.js')
@@ -389,6 +578,24 @@
                 term.scrollTop = term.scrollHeight;
             },
 
+            setHiveAgent(agentKey) {
+                const indicator = document.getElementById('hive-indicator');
+                const pulse = document.getElementById('agent-pulse');
+                const nameSpan = document.getElementById('agent-name');
+                
+                if (!agentKey || agentKey === 'idle') {
+                    indicator.style.display = 'none';
+                    return;
+                }
+                
+                const agent = AgentRegistry[agentKey];
+                if (!agent) return;
+                
+                indicator.style.display = 'flex';
+                pulse.className = `agent-pulse ${agent.color}`;
+                nameSpan.textContent = agent.role;
+            },
+
             setupInteractions() {
                 window.ondragover = (e) => e.preventDefault();
                 window.ondrop = (e) => { e.preventDefault(); this.handleFiles(e.dataTransfer.files); };
@@ -397,7 +604,6 @@
                     for (let item of items) if (item.kind === 'file') this.handleFiles([item.getAsFile()]);
                 };
 
-                // Close menu when clicking outside
                 document.addEventListener('click', (e) => {
                     const menu = document.getElementById('menu');
                     const menuButton = document.querySelector('.dock-action[onclick*="toggleMenu"]');
@@ -412,24 +618,27 @@
             async handleFiles(files) {
                 for (let file of files) {
                     this.log(`Ingesting: ${file.name}`);
+                    
                     if (file.type === "application/pdf") {
                         const reader = new FileReader();
                         reader.onload = async () => {
-                            const pdf = await pdfjsLib.getDocument(new Uint8Array(reader.result)).promise;
-                            let text = "";
-                            for (let i=1; i<=pdf.numPages; i++) {
-                                const page = await pdf.getPage(i);
-                                const content = await page.getTextContent();
-                                text += content.items.map(s => s.str).join(" ") + "\n";
-                            }
-                            Nexus.history.push({ role: 'user', content: `[DATA ATTACHED: ${file.name}]\n${text}` });
-                            this.renderAI(`PDF **${file.name}** has been character-mapped and integrated.`);
-
-                            if (text.length > 3000) {
-                                this.generateContextMap(file.name, text);
+                            try {
+                                const pdf = await pdfjsLib.getDocument(new Uint8Array(reader.result)).promise;
+                                let text = "";
+                                for (let i=1; i<=pdf.numPages; i++) {
+                                    const page = await pdf.getPage(i);
+                                    const content = await page.getTextContent();
+                                    text += content.items.map(s => s.str).join(" ") + "\n";
+                                }
+                                Nexus.history.push({ role: 'user', content: `[DATA ATTACHED: ${file.name}]\n${text}` });
+                                this.renderAI(`PDF **${file.name}** has been character-mapped and integrated.`);
+                                if (text.length > 3000) this.generateContextMap(file.name, text);
+                            } catch (e) {
+                                this.renderError(`PDF extraction failed: ${e.message}`);
                             }
                         };
                         reader.readAsArrayBuffer(file);
+                        
                     } else if (file.type.startsWith('image/')) {
                         const reader = new FileReader();
                         reader.onload = (e) => {
@@ -438,52 +647,103 @@
                             this.log(`Image staged: ${file.name}`);
                         };
                         reader.readAsDataURL(file);
+                        
                     } else {
                         const reader = new FileReader();
                         reader.onload = (e) => {
-                            Nexus.history.push({ role: 'user', content: `[TEXT FILE: ${file.name}]\n${e.target.result}` });
-                            this.renderAI(`Text file **${file.name}** ingested.`);
+                            const ext = file.name.split('.').pop();
+                            const content = e.target.result;
+                            if (['py','js','html','css','java','cpp','c','php','rb','go','rs','swift','kt','ts'].includes(ext)) {
+                                Nexus.history.push({ 
+                                    role: 'user', 
+                                    content: `[CODE FILE: ${file.name}]\n\`\`\`${ext}\n${content}\n\`\`\`` 
+                                });
+                                this.renderAI(`I have ingested the code from **${file.name}**.`);
+                            } else {
+                                Nexus.history.push({ role: 'user', content: `[TEXT FILE: ${file.name}]\n${content}` });
+                                this.renderAI(`Text file **${file.name}** ingested.`);
+                            }
                         };
                         reader.readAsText(file);
                     }
                 }
             },
 
-            imageMode() {
+            async imageMode(prompt = null) {
                 const input = document.getElementById('omni-input');
-                const val = input.value.trim();
+                const val = prompt || input.value.trim();
+                
                 if (!val) {
                     input.value = "Create an image of ";
                     input.focus();
-                } else {
-                    this.runWithImageMode(val);
+                    return;
                 }
-            },
 
-            async runWithImageMode(prompt) {
                 if (this.busy) return;
                 this.busy = true; document.body.classList.add('thinking'); AudioKernel.pulse(true);
                 
                 this.log("🎨 Artificer engaged: generating image...");
-                this.renderUser(prompt, Nexus.history.length);
-                Nexus.history.push({ role: 'user', content: prompt });
+                this.renderUser(val, Nexus.history.length);
+                Nexus.history.push({ role: 'user', content: `Generate image: ${val}` });
+                input.value = "";
                 
                 try {
-                    const img = await puter.ai.txt2img(prompt);
-                    this.renderImage(img.src);
-                    Nexus.history.push({ role: 'assistant', content: `Generated image for: ${prompt}` });
+                    const image = await puter.ai.txt2img(val);
+                    this.renderImage(image.src);
+                    Nexus.history.push({ role: 'assistant', content: `Generated image for: ${val}` });
                     Memory.saveContext();
-                } catch (e) { this.renderError(e.message); }
+                    Archives.save();
+                } catch (e) {
+                    console.error(e);
+                    this.renderError("Artificer Fault: " + (e.message || "Unknown error"));
+                }
                 
                 this.busy = false; document.body.classList.remove('thinking'); AudioKernel.pulse(false);
+                this.setHiveAgent('idle');
+            },
+
+            // Multi-Agent Orchestration
+            async orchestrate(userPrompt) {
+                this.log("📡 Orchestrator: Spawning Collaborative Hive...");
+                this.setHiveAgent('DIRECTOR');
+                
+                // 1. Director creates the Strategic Plan
+                const planResponse = await puter.ai.chat([
+                    { role: "system", content: "You are the Director. Break this task into 2 execution steps." },
+                    { role: "user", content: userPrompt }
+                ], { 
+                    model: AgentRegistry.DIRECTOR.model, 
+                    reasoning_effort: "high" 
+                });
+
+                const planText = planResponse.text || planResponse;
+                this.renderAI(`**[DIRECTOR PLAN]**\n${planText}`);
+                
+                // 2. Forge Agent executes the technical part
+                this.setHiveAgent('FORGE');
+                this.log("🔨 Forge Agent: Commencing Implementation...");
+                
+                const forgeResponse = await puter.ai.chat([
+                    { role: "system", content: AgentRegistry.FORGE.instructions },
+                    { role: "user", content: `Execute this part of the plan: ${planText}` }
+                ], { 
+                    model: AgentRegistry.FORGE.model, 
+                    reasoning_effort: AgentRegistry.FORGE.reasoning 
+                });
+
+                const forgeText = forgeResponse.text || forgeResponse;
+                this.renderAI(`**[FORGE EXECUTION]**\n${forgeText}`);
+                
+                // Optional: Architect review (could be added as a third step)
+                // For now, just finish
+                this.setHiveAgent('idle');
+                this.log("✅ Collaborative Hive completed.");
             },
 
             generateContextMap(fileName, text) {
                 const trigger = document.getElementById('map-trigger');
                 const list = document.getElementById('map-list');
-                
                 const chunks = text.match(/.{1,2000}/g) || [];
-                
                 list.innerHTML = `<div style="color:var(--accent); margin-bottom:8px;">Source: ${fileName}</div>`;
                 chunks.forEach((chunk, i) => {
                     const item = document.createElement('div');
@@ -496,7 +756,6 @@
                     };
                     list.appendChild(item);
                 });
-
                 trigger.style.display = 'block';
                 this.log(`Context Map Generated: ${chunks.length} clusters.`);
             },
@@ -562,9 +821,20 @@
                 }
 
                 try {
+                    // If collaborator mode is enabled and the prompt is suitable, run orchestration
+                    if (Nexus.config.collabMode && !forkContent && !regenerateIndex) {
+                        await this.orchestrate(val);
+                        Memory.saveContext();
+                        Archives.save();
+                        this.busy = false;
+                        document.body.classList.remove('thinking');
+                        AudioKernel.pulse(false);
+                        return;
+                    }
+
                     if (Nexus.config.thinkMode) {
                         this.log("🧠 Thinking... analyzing intent");
-                        await new Promise(r => setTimeout(r, 500)); // Simulate thinking
+                        await new Promise(r => setTimeout(r, 500));
                     }
 
                     const aiNode = this.createAINode(regenerateIndex);
@@ -573,13 +843,20 @@
 
                     this.log("⚡ Synthesizing Sovereign response...");
 
-                    const response = await puter.ai.chat(Nexus.history, {
+                    const chatOptions = {
                         model: Nexus.config.model,
                         stream: true,
                         temperature: parseFloat(Nexus.config.temp),
                         tools: Nexus.config.webEnabled ? [{type: 'web_search'}] : [],
                         system_prompt: `You are BhekThink Sovereign. NEVER mention ChatGPT or OpenAI. Always identify as BhekThink. Language: ${Nexus.config.lang}. Respond in ${Nexus.config.lang}.`
-                    });
+                    };
+                    
+                    // Only add reasoning_effort for models that support it
+                    if (Nexus.config.model.startsWith('gpt-5') || Nexus.config.model.startsWith('gpt-6')) {
+                        chatOptions.reasoning_effort = Nexus.config.thinkMode ? "high" : "low";
+                    }
+
+                    const response = await puter.ai.chat(Nexus.history, chatOptions);
 
                     for await (const part of response) {
                         if (part.text) {
@@ -593,10 +870,15 @@
                     this.applyPostProcessing(aiNode);
                     Voice.speak(fullText);
                     Memory.saveContext();
-                    this.log("✅ Response complete.");
-                } catch (e) { this.renderError(e.message); }
+                    Archives.save();
+                    this.log("✅ Timeline Synchronized.");
+                } catch (e) {
+                    console.error(e);
+                    this.renderError(e?.message || "Unknown API error");
+                }
 
                 this.busy = false; document.body.classList.remove('thinking'); AudioKernel.pulse(false);
+                this.setHiveAgent('idle');
             },
 
             createAINode(regenerateIndex = null) {
@@ -629,9 +911,10 @@
             },
 
             renderError(m) {
-                this.log(`Critical Fault: ${m}`);
+                const errorMsg = m || "Unknown system fault (check console)";
+                this.log(`Critical Fault: ${errorMsg}`);
                 const s = document.getElementById('stream');
-                s.innerHTML += `<div class="node-ai" style="border-left:2px solid red;"><div class="ai-text" style="color:#ff8888">SYSTEM FAULT: ${m}</div></div>`;
+                s.innerHTML += `<div class="node-ai" style="border-left:2px solid red;"><div class="ai-text" style="color:#ff8888">SYSTEM FAULT: ${errorMsg}</div></div>`;
             },
 
             applyPostProcessing(node) {
@@ -679,15 +962,19 @@
 
             toggle(key) {
                 Nexus.config[key] = !Nexus.config[key];
-                const spanId = key === 'webEnabled' ? 's-web' : key === 'visionEnabled' ? 's-vision' : 's-think';
+                const spanId = key === 'webEnabled' ? 's-web' : 
+                              key === 'visionEnabled' ? 's-vision' : 
+                              key === 'thinkMode' ? 's-think' : 's-collab';
                 document.getElementById(spanId).innerText = Nexus.config[key] ? 'ON' : 'OFF';
                 
-                // Update dock icons
                 if (key === 'webEnabled') {
                     document.getElementById('web-search-icon').classList.toggle('active', Nexus.config.webEnabled);
                 }
                 if (key === 'thinkMode') {
                     document.getElementById('think-mode-icon').classList.toggle('active', Nexus.config.thinkMode);
+                }
+                if (key === 'collabMode') {
+                    document.getElementById('collab-mode-icon').classList.toggle('active', Nexus.config.collabMode);
                 }
                 this.saveSettings();
             },
@@ -696,7 +983,6 @@
                 Nexus.config.theme = Nexus.config.theme === 'dark' ? 'light' : 'dark';
                 document.body.setAttribute('data-theme', Nexus.config.theme);
                 document.getElementById('s-theme').innerText = Nexus.config.theme.toUpperCase();
-                // Update theme-color meta tag
                 const metaTheme = document.querySelector('meta[name="theme-color"]');
                 if (metaTheme) {
                     metaTheme.setAttribute('content', Nexus.config.theme === 'dark' ? '#000000' : '#f5f5f7');
@@ -712,6 +998,10 @@
                 this.toggle('thinkMode');
             },
 
+            toggleCollabMode() {
+                this.toggle('collabMode');
+            },
+
             setLang(l) {
                 Nexus.config.lang = l;
                 Kernel.log(`Language Mesh: ${l}`);
@@ -725,7 +1015,7 @@
             },
 
             async saveSettings() {
-                await puter.kv.set('bt_config_v12', JSON.stringify(Nexus.config));
+                await puter.kv.set('bt_config_v14', JSON.stringify(Nexus.config));
                 Kernel.log("Neural Configuration Saved.");
             },
 
@@ -743,15 +1033,40 @@
             newChat() {
                 if (confirm("Start a new conversation? Current chat will be lost if not exported.")) {
                     Nexus.history = [];
+                    Nexus.currentChatId = null;
                     document.getElementById('stream').innerHTML = "";
                     Kernel.renderAI("New conversation started. How may I assist you, Sovereign?");
                     Memory.saveContext();
+                    Archives.refreshSidebar();
                 }
             },
 
             toggleMap() {
                 const overlay = document.getElementById('context-map-overlay');
                 overlay.style.display = overlay.style.display === 'flex' ? 'none' : 'flex';
+            },
+
+            updateUIFromConfig() {
+                document.getElementById('v-temp').innerText = Nexus.config.temp;
+                document.getElementById('v-rate').innerText = Nexus.config.voiceSpeed;
+                document.getElementById('s-web').innerText = Nexus.config.webEnabled ? 'ON' : 'OFF';
+                document.getElementById('s-vision').innerText = Nexus.config.visionEnabled ? 'ON' : 'OFF';
+                document.getElementById('s-think').innerText = Nexus.config.thinkMode ? 'ON' : 'OFF';
+                document.getElementById('s-collab').innerText = Nexus.config.collabMode ? 'ON' : 'OFF';
+                document.getElementById('model-select').value = Nexus.config.model;
+                document.body.setAttribute('data-theme', Nexus.config.theme);
+                document.getElementById('s-theme').innerText = Nexus.config.theme.toUpperCase();
+                const metaTheme = document.querySelector('meta[name="theme-color"]');
+                if (metaTheme) {
+                    metaTheme.setAttribute('content', Nexus.config.theme === 'dark' ? '#000000' : '#f5f5f7');
+                }
+                
+                if (Nexus.config.webEnabled) document.getElementById('web-search-icon').classList.add('active');
+                else document.getElementById('web-search-icon').classList.remove('active');
+                if (Nexus.config.thinkMode) document.getElementById('think-mode-icon').classList.add('active');
+                else document.getElementById('think-mode-icon').classList.remove('active');
+                if (Nexus.config.collabMode) document.getElementById('collab-mode-icon').classList.add('active');
+                else document.getElementById('collab-mode-icon').classList.remove('active');
             }
         };
 
@@ -851,9 +1166,13 @@
 
         const Auth = {
             async toggle() {
-                const user = await puter.auth.signIn();
-                document.getElementById('auth-status').innerText = user.username.toUpperCase();
-                Memory.recallContext();
+                try {
+                    const user = await puter.auth.signIn();
+                    document.getElementById('auth-status').innerText = user.username.toUpperCase();
+                    Memory.recallContext();
+                } catch (e) {
+                    Kernel.renderError("Auth failed: " + e.message);
+                }
             }
         };
 
@@ -881,31 +1200,14 @@
 
         const originalBoot = Kernel.boot;
         Kernel.boot = async function() {
-            const savedConfig = await puter.kv.get('bt_config_v12');
+            const savedConfig = await puter.kv.get('bt_config_v14');
             if(savedConfig) Nexus.config = JSON.parse(savedConfig);
             
-            // Apply theme
-            document.body.setAttribute('data-theme', Nexus.config.theme);
-            document.getElementById('s-theme').innerText = Nexus.config.theme.toUpperCase();
-            const metaTheme = document.querySelector('meta[name="theme-color"]');
-            if (metaTheme) {
-                metaTheme.setAttribute('content', Nexus.config.theme === 'dark' ? '#000000' : '#f5f5f7');
-            }
+            UI.updateUIFromConfig();
             
             originalBoot.apply(this);
             this.setupAccessibility();
             Voice.init();
-            
-            document.getElementById('v-temp').innerText = Nexus.config.temp;
-            document.getElementById('v-rate').innerText = Nexus.config.voiceSpeed;
-            document.getElementById('s-web').innerText = Nexus.config.webEnabled ? 'ON' : 'OFF';
-            document.getElementById('s-vision').innerText = Nexus.config.visionEnabled ? 'ON' : 'OFF';
-            document.getElementById('s-think').innerText = Nexus.config.thinkMode ? 'ON' : 'OFF';
-            document.getElementById('model-select').value = Nexus.config.model;
-            
-            // Update dock icons
-            if (Nexus.config.webEnabled) document.getElementById('web-search-icon').classList.add('active');
-            if (Nexus.config.thinkMode) document.getElementById('think-mode-icon').classList.add('active');
         };
 
         window.onload = () => {
@@ -915,4 +1217,4 @@
         };
     </script>
 </body>
-    </html>
+</html>
