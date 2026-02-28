@@ -1,0 +1,23 @@
+# BhekThink Sovereign - System Ignores
+
+# Environment & Secrets
+.env
+.env.local
+.env.*.local
+*.pem
+secrets.json
+
+# OS Specific
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Puter & Local Dev
+.puter/
+dist/
+node_modules/
+npm-debug.log*
+
+# Application State
+*.log
+bt_session_*.json
