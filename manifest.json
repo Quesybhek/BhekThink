@@ -1,16 +1,51 @@
 {
   "name": "BhekThink Sovereign",
   "short_name": "BhekThink",
-  "description": "Sovereign AI assistant with multimodal capabilities",
+  "description": "Sovereign AI assistant with multimodal capabilities – chat, image generation, file analysis, and multi‑agent orchestration.",
+  "id": "/BhekThink/",
   "start_url": "/BhekThink/",
   "scope": "/BhekThink/",
   "display": "standalone",
-  "background_color": "#000000",
+  "display_override": ["window-controls-overlay", "standalone"],
+  "orientation": "any",
   "theme_color": "#000000",
+  "background_color": "#000000",
+  "dir": "ltr",
+  "lang": "en",
+  "categories": ["productivity", "utilities"],
+  "iarc_rating_id": "",
+  "related_applications": [],
+  "prefer_related_applications": false,
+  "shortcuts": [
+    {
+      "name": "New Chat",
+      "short_name": "New",
+      "description": "Start a new conversation",
+      "url": "/BhekThink/?new",
+      "icons": [
+        {
+          "src": "icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Upload File",
+      "short_name": "Upload",
+      "description": "Upload a document",
+      "url": "/BhekThink/?upload",
+      "icons": [
+        {
+          "src": "icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ],
   "icons": [
     {
       "src": "icon-192.png",
-      "sizes": "1024x1024",
+      "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
@@ -21,20 +56,20 @@
       "purpose": "any maskable"
     }
   ],
-  "shortcuts": [
+  "screenshots": [
     {
-      "name": "New Chat",
-      "short_name": "New",
-      "description": "Start a new conversation",
-      "url": "/BhekThink/?new",
-      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
+      "src": "screenshot-desktop.png",
+      "sizes": "1920x1080",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Desktop view of BhekThink"
     },
     {
-      "name": "Upload File",
-      "short_name": "Upload",
-      "description": "Upload a document",
-      "url": "/BhekThink/?upload",
-      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
+      "src": "screenshot-mobile.png",
+      "sizes": "750x1334",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Mobile view of BhekThink"
     }
   ],
   "file_handlers": [
@@ -70,25 +105,9 @@
     "preferred_width": 400
   },
   "window_controls_overlay": true,
-  "display_override": ["window-controls-overlay", "standalone"]
-}
-{
-  "theme_color": "#000000",
-  "background_color": "#000000",
-  "display_override": ["window-controls-overlay", "standalone"],
-  "screenshots": [
+  "scope_extensions": [
     {
-      "src": "screenshot-dark.png",
-      "sizes": "1080x1920",
-      "type": "image/png",
-      "label": "Sovereign Dark Mode"
-    },
-    {
-      "src": "screenshot-light.png",
-      "sizes": "1080x1920",
-      "type": "image/png",
-      "label": "Sovereign Light Mode"
+      "origin": "https://*.puter.com"
     }
   ]
 }
-
