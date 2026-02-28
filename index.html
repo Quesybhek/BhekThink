@@ -2,13 +2,30 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>BhekThink v1012.0 | Sovereign Convergence</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>BhekThink v1016.0 | Sovereign Convergence</title>
     
     <!-- PWA Support -->
-    <link rel="manifest" href="/manifest.json">
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon-192.png">
     <meta name="theme-color" content="#000000">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <!-- iOS Splash Screens (Generate actual images and replace hrefs) -->
+    <!-- iPhone 12/13/14 (Portrait) -->
+    <link rel="apple-touch-startup-image" href="splash/iphone12_portrait.png" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3)">
+    <!-- iPhone 12/13/14 (Landscape) -->
+    <link rel="apple-touch-startup-image" href="splash/iphone12_landscape.png" media="(device-width: 844px) and (device-height: 390px) and (-webkit-device-pixel-ratio: 3)">
+    <!-- iPhone 14 Pro Max (Portrait) -->
+    <link rel="apple-touch-startup-image" href="splash/iphone14pro_portrait.png" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3)">
+    <!-- iPhone 14 Pro Max (Landscape) -->
+    <link rel="apple-touch-startup-image" href="splash/iphone14pro_landscape.png" media="(device-width: 932px) and (device-height: 430px) and (-webkit-device-pixel-ratio: 3)">
+    <!-- iPad Pro 11" (Portrait) -->
+    <link rel="apple-touch-startup-image" href="splash/ipadpro11_portrait.png" media="(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2)">
+    <!-- iPad Pro 11" (Landscape) -->
+    <link rel="apple-touch-startup-image" href="splash/ipadpro11_landscape.png" media="(device-width: 1194px) and (device-height: 834px) and (-webkit-device-pixel-ratio: 2)">
+    <!-- Add more sizes as needed – see https://developer.apple.com/design/human-interface-guidelines/spash-screens -->
 
     <script src="https://js.puter.com/v2/"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
@@ -44,6 +61,18 @@
         }
         .boot-btn { margin-top: 30px; padding: 15px 40px; background: var(--accent); color: #000; border: none; border-radius: 50px; font-weight: 900; cursor: pointer; letter-spacing: 2px; }
 
+        /* Update Notification Banner */
+        #update-banner {
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            background: var(--panel); border: 1px solid var(--accent);
+            border-radius: 40px; padding: 12px 24px; display: none;
+            align-items: center; gap: 16px; z-index: 10000;
+            box-shadow: var(--bt-glow); backdrop-filter: blur(10px);
+            animation: slideUp 0.3s ease;
+        }
+        .update-text { color: var(--accent); font-weight: 600; font-size: 14px; }
+        .update-btn { background: var(--accent); color: #000; border: none; border-radius: 30px; padding: 6px 16px; font-weight: 900; cursor: pointer; font-size: 12px; }
+
         #menu { 
             position: fixed; top: 0; left: -100%; width: 85vw; max-width: 380px; height: 100%; 
             background: rgba(2, 2, 2, 0.98); z-index: 2000; transition: 0.5s cubic-bezier(1,0,0,1); 
@@ -63,7 +92,18 @@
         .tool-btn { background: #0a0a0a; border: 1px solid #222; color: #fff; padding: 12px; border-radius: 10px; font-size: 11px; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s; font-weight: 600; }
         .tool-btn:hover { border-color: var(--accent); background: #111; }
 
-        header { padding: 20px 30px; display: flex; justify-content: space-between; align-items: center; z-index: 100; background: rgba(0,0,0,0.4); backdrop-filter: blur(10px); }
+        header { 
+            padding: 20px 30px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            z-index: 100; 
+            background: rgba(0,0,0,0.4); 
+            backdrop-filter: blur(10px); 
+            padding-top: max(20px, env(titlebar-area-height, 0px)); 
+            padding-left: env(titlebar-area-x, 30px);
+            padding-right: env(titlebar-area-width, auto);
+        }
         .live-tag { color: var(--accent); font-weight: 950; letter-spacing: 4px; display: flex; align-items: center; gap: 10px; cursor: pointer; }
 
         #stream { flex: 1; overflow-y: auto; padding: 40px; display: flex; flex-direction: column; gap: 40px; scroll-behavior: smooth; dir: auto; }
@@ -125,6 +165,7 @@
 
         @keyframes shine { to { background-position: 200%; } }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideUp { from { transform: translate(-50%, 100%); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }
     </style>
 </head>
 <body class="bhekthink-absolute">
@@ -135,6 +176,13 @@
         <div class="brand-reveal">BhekThink</div>
         <div class="sub-reveal" style="color: var(--accent); letter-spacing: 5px; font-weight: 900; margin-top: 10px;">SOVEREIGN SINGULARITY</div>
         <button class="boot-btn" onclick="Kernel.boot()">INITIALIZE KERNEL</button>
+    </div>
+
+    <!-- Update Notification Banner -->
+    <div id="update-banner">
+        <span class="material-symbols-rounded" style="color: var(--accent);">system_update</span>
+        <span class="update-text">New version available</span>
+        <button class="update-btn" onclick="Kernel.applyUpdate()">UPDATE</button>
     </div>
 
     <div id="menu">
@@ -191,7 +239,7 @@
 
     <header>
         <div class="live-tag" onclick="UI.toggleMenu()">
-            <span class="material-symbols-rounded" aria-hidden="true">hub</span> BHEKTHINK v1012.0
+            <span class="material-symbols-rounded" aria-hidden="true">hub</span> BHEKTHINK v1016.0
         </div>
         <canvas id="visualizer" width="140" height="30" aria-label="Audio Visualizer"></canvas>
         <div style="display: flex; gap: 10px;">
@@ -247,6 +295,7 @@
         const Kernel = {
             busy: false,
             pendingImage: null,
+            updateRegistration: null, // Store service worker registration for update
 
             boot() {
                 document.getElementById('induction').style.opacity = '0';
@@ -256,13 +305,62 @@
                     this.setupInteractions();
                     Memory.recallContext();
                     
-                    // Register Service Worker after boot
+                    // Service Worker Registration with Update Detection
                     if ('serviceWorker' in navigator) {
-                        navigator.serviceWorker.register('./sw.js')
-                            .then(() => this.log("Sovereign Service Worker: ACTIVE"))
+                        navigator.serviceWorker.register('/BhekThink/sw.js')
+                            .then(reg => {
+                                this.updateRegistration = reg;
+                                this.log("Sovereign Service Worker: ACTIVE");
+                                
+                                // Check for updates
+                                reg.addEventListener('updatefound', () => {
+                                    const newWorker = reg.installing;
+                                    newWorker.addEventListener('statechange', () => {
+                                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                            // New version available
+                                            this.showUpdateNotification();
+                                        }
+                                    });
+                                });
+                            })
                             .catch(err => this.log(`SW Error: ${err}`));
                     }
+
+                    // File Handler Integration (launchQueue)
+                    if ('launchQueue' in window) {
+                        launchQueue.setConsumer(async (launchParams) => {
+                            if (!launchParams.files.length) return;
+                            for (const fileHandle of launchParams.files) {
+                                const file = await fileHandle.getFile();
+                                this.log(`OS Handover: ${file.name}`);
+                                this.handleFiles([file]);
+                            }
+                        });
+                    }
+
+                    // Handle Share Target and Shortcuts via URL
+                    const params = new URLSearchParams(window.location.search);
+                    if (params.has('text') || params.has('url') || params.has('title')) {
+                        const sharedData = `${params.get('title') || ''} ${params.get('text') || ''} ${params.get('url') || ''}`.trim();
+                        if (sharedData) {
+                            document.getElementById('omni-input').value = `Analyze this shared data: ${sharedData}`;
+                            this.log("Inbound Share Detected.");
+                        }
+                    }
                 }, 1200);
+            },
+
+            showUpdateNotification() {
+                document.getElementById('update-banner').style.display = 'flex';
+            },
+
+            applyUpdate() {
+                if (this.updateRegistration && this.updateRegistration.waiting) {
+                    // Send message to waiting service worker to skip waiting
+                    this.updateRegistration.waiting.postMessage({ type: 'SKIP_WAITING' });
+                }
+                // Reload to activate new version
+                window.location.reload();
             },
 
             log(msg) {
@@ -419,7 +517,8 @@
                         stream: true,
                         temperature: parseFloat(Nexus.config.temp),
                         tools: Nexus.config.webEnabled ? [{type: 'web_search'}] : [],
-                        system_prompt: `Identify as BhekThink Sovereign. Language: ${Nexus.config.lang}. Respond in ${Nexus.config.lang}.`
+                        // STRONGER SYSTEM PROMPT – forces identity as BhekThink
+                        system_prompt: `You are BhekThink Sovereign, a sovereign AI assistant. NEVER mention that you are ChatGPT, OpenAI, or any other AI model. Always identify as BhekThink. Language: ${Nexus.config.lang}. Respond in ${Nexus.config.lang}.`
                     });
 
                     for await (const part of response) {
@@ -667,6 +766,13 @@
             Matrix.canvas.width = window.innerWidth;
             Matrix.canvas.height = window.innerHeight;
             Matrix.charStack = Array(Math.ceil(Matrix.canvas.width / 20)).fill(1);
+        });
+
+        // Listen for service worker update messages
+        navigator.serviceWorker.addEventListener('message', event => {
+            if (event.data.type === 'UPDATE_AVAILABLE') {
+                Kernel.showUpdateNotification();
+            }
         });
 
         const originalBoot = Kernel.boot;
