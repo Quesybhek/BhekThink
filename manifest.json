@@ -72,3 +72,23 @@
   "window_controls_overlay": true,
   "display_override": ["window-controls-overlay", "standalone"]
 }
+{
+  "theme_color": "#000000",
+  "background_color": "#000000",
+  "display_override": ["window-controls-overlay", "standalone"],
+  "screenshots": [
+    {
+      "src": "screenshot-dark.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "label": "Sovereign Dark Mode"
+    },
+    {
+      "src": "screenshot-light.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "label": "Sovereign Light Mode"
+    }
+  ]
+}
+
