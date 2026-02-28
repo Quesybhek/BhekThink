@@ -1,8 +1,9 @@
 {
   "name": "BhekThink Sovereign",
   "short_name": "BhekThink",
-  "description": "The Sovereign AI Singularity Terminal",
-  "start_url": ".",
+  "description": "Sovereign AI assistant with multimodal capabilities",
+  "start_url": "/BhekThink/",
+  "scope": "/BhekThink/",
   "display": "standalone",
   "background_color": "#000000",
   "theme_color": "#000000",
@@ -10,7 +11,8 @@
     {
       "src": "icon-192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
       "src": "icon-512.png",
@@ -18,5 +20,55 @@
       "type": "image/png",
       "purpose": "any maskable"
     }
-  ]
+  ],
+  "shortcuts": [
+    {
+      "name": "New Chat",
+      "short_name": "New",
+      "description": "Start a new conversation",
+      "url": "/BhekThink/?new",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Upload File",
+      "short_name": "Upload",
+      "description": "Upload a document",
+      "url": "/BhekThink/?upload",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
+    }
+  ],
+  "file_handlers": [
+    {
+      "action": "/BhekThink/",
+      "accept": {
+        "text/plain": [".txt"],
+        "application/pdf": [".pdf"],
+        "image/*": [".jpg", ".jpeg", ".png", ".gif"]
+      }
+    }
+  ],
+  "share_target": {
+    "action": "/BhekThink/",
+    "method": "GET",
+    "enctype": "application/x-www-form-urlencoded",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
+  },
+  "launch_handler": {
+    "client_mode": "focus-existing"
+  },
+  "protocol_handlers": [
+    {
+      "protocol": "web+bhekthink",
+      "url": "/BhekThink/?command=%s"
+    }
+  ],
+  "edge_side_panel": {
+    "preferred_width": 400
+  },
+  "window_controls_overlay": true,
+  "display_override": ["window-controls-overlay", "standalone"]
 }
